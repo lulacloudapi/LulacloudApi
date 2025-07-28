@@ -8,16 +8,12 @@ function extractSubjectId(html, movieTitle) {
 }
 
 function extractDetailPathFromHtml(html, subjectId, movieTitle) {
-  const slug = movieTitle.trim().toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') + '-';
+  const slug = movieTitle.trim().toLowerCase().replace(/['’]/g, '')
+    .replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-';
 
   const idPattern = new RegExp(`${subjectId}`);
   const idMatch = idPattern.exec(html);
   if (!idMatch) return null;
-
   const before = html.substring(0, idMatch.index);
   const detailPathRegex = new RegExp(`((?:${slug})[^"]+)`, 'gi');
   let match, lastMatch = null;
@@ -75,120 +71,130 @@ module.exports = async (req, res) => {
       }
     });
 
-    const downloads = downloadResp.data?.data?.downloads || [];
+    const allCaptions = downloads.flatMap(dl => dl.captions || []);
+const uniqueCaptions = allCaptions.filter((c, i, self) =>
+  c?.url && self.findIndex(x => x.url === c.url) === i
+);
 
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Download ${title} (${year}) - Lulacloud</title>
-      <style>
-        body {
-          font-family: 'Segoe UI', sans-serif;
-          background-color: #f9fafb;
-          margin: 0;
-          padding: 20px;
-          color: #111827;
-        }
-        .container {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 2rem;
-          background: #fff;
-          border-radius: 0.75rem;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h1 {
-          font-size: 1.8rem;
-          font-weight: 700;
-          text-align: center;
-          color: #1f2937;
-        }
-        .section-title {
-          font-size: 1.2rem;
-          font-weight: 600;
-          margin-top: 2rem;
-          margin-bottom: 0.75rem;
-          color: #1f2937;
-        }
-        .download-button {
-          display: block;
-          background: linear-gradient(to right, #10b981, #059669);
-          color: white;
-          padding: 0.8rem 1rem;
-          margin: 0.75rem 0;
-          text-align: center;
-          text-decoration: none;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          transition: background 0.3s ease;
-        }
-        .download-button:hover {
-          background: linear-gradient(to right, #059669, #047857);
-        }
-        .sub-button {
-          display: inline-block;
-          background: #3b82f6;
-          color: white;
-          padding: 0.5rem 0.8rem;
-          margin: 0.3rem 0.3rem 0 0;
-          text-align: center;
-          text-decoration: none;
-          border-radius: 0.375rem;
-          font-size: 0.9rem;
-        }
-        .sub-button:hover {
-          background: #2563eb;
-        }
-        footer {
-          margin-top: 3rem;
-          text-align: center;
-          font-size: 0.9rem;
-          color: #6b7280;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>Download: ${title} (${year})</h1>
+let htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Download ${title} (${year}) - Lulacloud</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 20px;
+      color: #111827;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      text-align: center;
+      color: #1f2937;
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      color: #1f2937;
+    }
+    .download-button {
+      display: block;
+      background: linear-gradient(to right, #10b981, #059669);
+      color: white;
+      padding: 0.8rem 1rem;
+      margin: 0.75rem 0;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+    .download-button:hover {
+      background: linear-gradient(to right, #059669, #047857);
+    }
+    .sub-button {
+      display: inline-block;
+      background: #3b82f6;
+      color: white;
+      padding: 0.5rem 0.8rem;
+      margin: 0.3rem 0.3rem 0 0;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 0.375rem;
+      font-size: 0.9rem;
+    }
+    .sub-button:hover {
+      background: #2563eb;
+    }
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Download: ${title} (${year})</h1>
 
-        <div class="section-title">🎬 Video Downloads</div>
-        ${
-          downloads.length
-            ? downloads.map(dl => {
-                const label = dl.label || 'HD Quality';
-                const resolution = dl.resolution || '';
-                const rawSize = parseInt(dl.size || 0, 10);
-                const size = rawSize > 0 ? formatFileSize(rawSize) : '';
-                const captions = Array.isArray(dl.captions) ? dl.captions : [];
+    <div class="section-title">🎬 Video Downloads</div>
+    ${
+      downloads.length
+        ? downloads.map(dl => {
+            const label = dl.label || 'HD Quality';
+            const resolution = dl.resolution || '';
+            const rawSize = parseInt(dl.size || 0, 10);
+            const size = rawSize > 0 ? formatFileSize(rawSize) : '';
+            return `
+              <div>
+                <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
+                  ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
+                </a>
+              </div>
+            `;
+          }).join('')
+        : '<p>No video download links available.</p>'
+    }
 
-                const captionLinks = captions.map(c => {
-                  const lang = c.language || 'Subtitle';
-                  return `
-                    <a class="sub-button" href="${c.url}" target="_blank" rel="noopener noreferrer">
-                      ${lang}
-                    </a>`;
-                }).join('');
+    ${
+      uniqueCaptions.length > 0
+        ? `
+          <div class="section-title">📄 Subtitles</div>
+          <div>
+            ${uniqueCaptions.map(c => {
+              const lang = c.language || 'Subtitle';
+              return `
+                <a class="sub-button" href="${c.url}" target="_blank" rel="noopener noreferrer">
+                  ${lang}
+                </a>
+              `;
+            }).join('')}
+          </div>
+        `
+        : ''
+    }
 
-                return `
-                  <div>
-                    <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
-                      ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
-                    </a>
-                    ${captionLinks ? `<div>${captionLinks}</div>` : ''}
-                  </div>
-                `;
-              }).join('')
-            : '<p>No download links available.</p>'
-        }
-
-        <footer>Powered by Lulacloud Downloads</footer>
-      </div>
-    </body>
-    </html>
-    `;
+    <footer>Powered by Lulacloud Downloads</footer>
+  </div>
+</body>
+</html>
+`;
 
     res.send(htmlContent);
 
