@@ -29,7 +29,7 @@ function extractDetailPathFromHtml(html, subjectId, movieTitle) {
 
 module.exports = async (req, res) => {
   const { tmdbId, season, episode } = req.query;
-  const TMDB_API_KEY = process.env.TMDB_API_KEY || 'YOUR_TMDB_API_KEY_HERE'; // Replace with your TMDb API key
+  const TMDB_API_KEY = process.env.TMDB_API_KEY || '0c174d60d0fde85c3522abc550ce0b4e'; // Replace with your TMDb API key
 
   if (!tmdbId  !season  !episode) {
     return res.status(400).json({ success: false, error: 'Missing tmdbId, season, or episode' });
