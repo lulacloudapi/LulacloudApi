@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
     const downloads = downloadResp.data?.data?.downloads || [];
 
     // ✅ Render a simple HTML page with download buttons
-    let htmlContent = `
+   let htmlContent = `
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -95,10 +95,10 @@ module.exports = async (req, res) => {
         color: #1f2937;
       }
       .section-title {
+        margin-top: 2rem;
         font-size: 1.125rem;
         font-weight: 500;
-        margin: 1.5rem 0 0.75rem;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
         padding-bottom: 0.25rem;
         color: #374151;
       }
@@ -113,8 +113,14 @@ module.exports = async (req, res) => {
         border-radius: 0.5rem;
         transition: background 0.2s ease;
       }
-      .download-button:hover, .subtitle-button:hover {
+      .subtitle-button {
+        background: #3b82f6;
+      }
+      .download-button:hover {
         background: #059669;
+      }
+      .subtitle-button:hover {
+        background: #2563eb;
       }
       footer {
         margin-top: 2rem;
@@ -128,25 +134,29 @@ module.exports = async (req, res) => {
     <div class="container">
       <h1>Download Options for ${title} (${year})</h1>
 
-      <div>
-        <div class="section-title">Video Downloads</div>
-        ${downloads.length ? downloads.map(dl => `
-          <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
-            Download ${dl.label || 'Unknown Quality'}
-          </a>
-        `).join('') : '<p>No download links available.</p>'}
-      </div>
+      <div class="section-title">Download Links</div>
+      ${
+        downloads?.length
+          ? downloads.map(dl => `
+            <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
+              Download ${dl.resolution || ''} ${dl.size ? `(${dl.size})` : ''} - ${dl.label || 'Video'}
+            </a>
+          `).join('')
+          : '<p>No downloads available.</p>'
+      }
 
-      <div>
-        <div class="section-title">Subtitle Files</div>
-        ${subtitles.length ? subtitles.map(sub => `
-          <a class="subtitle-button" href="${sub.url}" target="_blank" rel="noopener noreferrer">
-            ${sub.lang.toUpperCase()} Subtitle
-          </a>
-        `).join('') : '<p>No subtitles available.</p>'}
-      </div>
+      <div class="section-title">Subtitle Files</div>
+      ${
+        captions?.length
+          ? captions.map(sub => `
+            <a class="subtitle-button" href="${sub.url}" target="_blank" rel="noopener noreferrer">
+              ${sub.label || 'Subtitle'} (${sub.language || 'unknown'})
+            </a>
+          `).join('')
+          : '<p>No subtitles available.</p>'
+      }
     </div>
-    <footer>Powered by Lulacloud Downloads API</footer>
+    <footer>Lulacloud Downloads API</footer>
   </body>
   </html>
 `;
