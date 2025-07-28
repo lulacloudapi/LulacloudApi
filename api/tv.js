@@ -1,86 +1,63 @@
-const axios = require('axios');
+import axios from 'axios';
 
-// ✅ Extract subjectId from HTML
-function extractSubjectId(html, movieTitle) {
-  const escapedTitle = movieTitle.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const regex = new RegExp(`"(\\d{16,})",\\s*"[^"]*",\\s*"${escapedTitle}"`, 'i');
-  const match = html.match(regex);
-  return match ? match[1] : null;
-}
-
-// ✅ Extract detail path from HTML
-function extractDetailPathFromHtml(html, subjectId, movieTitle) {
-  const slug = movieTitle
-    .trim()
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') + '-';
-
-  const idPattern = new RegExp(subjectId);
-  const idMatch = idPattern.exec(html);
-  if (!idMatch) return null;
-
-  const before = html.substring(0, idMatch.index);
-  const detailPathRegex = new RegExp(`((?:${slug})[^"]+)`, 'gi');
-
-  let match, lastMatch = null;
-  while ((match = detailPathRegex.exec(before)) !== null) {
-    lastMatch = match[1];
-  }
-
-  return lastMatch;
-}
-
-// ✅ API handler
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  console.log('Request Query:', req.query);
   const { tmdbId, season, episode } = req.query;
-  const TMDB_API_KEY = process.env.TMDB_API_KEY || '0c174d60d0fde85c3522abc550ce0b4e';
+  const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
+  if (!TMDB_API_KEY) {
+    console.error('❌ TMDB_API_KEY not set');
+    return res.status(500).json({ error: 'Missing TMDB_API_KEY' });
+  }
   if (!tmdbId || !season || !episode) {
-    return res.status(400).json({ success: false, error: 'Missing tmdbId, season, or episode' });
+    return res.status(400).json({ error: 'Missing tmdbId, season, or episode' });
   }
 
   try {
-    // TMDB request
-    const tmdbResp = await axios.get(`https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY}`);
+    console.log('Fetching TMDB...');
+    const tmdbResp = await axios.get(
+      `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY}`
+    );
+    console.log('TMDB Response:', tmdbResp.data);
+
     const title = tmdbResp.data.name;
     const year = tmdbResp.data.first_air_date?.split('-')[0] || '';
     const searchKeyword = `${title} ${year}`;
+    const searchUrl = `https://moviebox.ph/web/searchResult?keyword=${encodeURIComponent(
+      searchKeyword
+    )}`;
 
-    // MovieBox search request
-    const searchUrl = `https://moviebox.ph/web/searchResult?keyword=${encodeURIComponent(searchKeyword)}`;
+    console.log('Searching MovieBox:', searchUrl);
     const searchResp = await axios.get(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      }
+      headers: { 'User-Agent': 'Mozilla/5.0' }
     });
+    console.log('Search HTML length:', searchResp.data.length);
 
-    const html = searchResp.data;
-
-    // Extract subjectId
-    const subjectId = extractSubjectId(html, title);
+    const subjectId = extractSubjectId(searchResp.data, title);
     if (!subjectId) {
-      return res.status(404).json({ success: false, error: 'subjectId not found in HTML' });
+      console.error('SubjectId not found');
+      return res.status(404).json({ error: 'subjectId not found' });
     }
+    console.log('Found subjectId:', subjectId);
 
-    // Extract detailPath
-    const detailPath = extractDetailPathFromHtml(html, subjectId, title);
-    const detailsUrl = detailPath ? `https://moviebox.ph/movies/${detailPath}?id=${subjectId}` : null;
+    const detailPath = extractDetailPathFromHtml(searchResp.data, subjectId, title);
+    const detailsUrl = detailPath
+      ? `https://moviebox.ph/movies/${detailPath}?id=${subjectId}`
+      : undefined;
 
-    // Download API request
     const downloadUrl = `https://moviebox.ph/wefeed-h5-bff/web/subject/download?subjectId=${subjectId}&se=${season}&ep=${episode}`;
+    console.log('Fetching download URL:', downloadUrl);
+
     const downloadResp = await axios.get(downloadUrl, {
       headers: {
-        'accept': 'application/json',
+        accept: 'application/json',
         'user-agent': 'Mozilla/5.0',
         'x-client-info': JSON.stringify({ timezone: 'Africa/Lagos' }),
-        'referer': detailsUrl
+        ...(detailsUrl ? { referer: detailsUrl } : {})
       }
     });
+    console.log('Download response data:', downloadResp.data);
 
-    // ✅ Return result
     return res.status(200).json({
       success: true,
       title,
@@ -88,9 +65,10 @@ module.exports = async (req, res) => {
       episode,
       downloadData: downloadResp.data
     });
-
   } catch (err) {
-    console.error('Server error:', err.message);
-    return res.status(500).json({ success: false, error: err.message });
+    console.error('🧨 Handler Error:', err);
+    return res.status(500).json({ error: 'Function crashed', details: err.message });
   }
-};
+}
+
+// Add extractSubjectId, extractDetailPathFromHtml functions below from your Logic A
