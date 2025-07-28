@@ -36,149 +36,148 @@ module.exports = async (req, res) => {
     const title = tmdbResp.data.title;
     const year = tmdbResp.data.release_date?.split('-')[0];
 
-    const searchKeyword = `${title} ${year}`;
-    const searchUrl = `https://moviebox.ph/web/searchResult?keyword=${encodeURIComponent(searchKeyword)}`;
-
-    const searchResp = await axios.get(searchUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-    });
-    const html = searchResp.data;
-
-    const subjectId = extractSubjectId(html, title);
-    if (!subjectId) {
-      return res.status(404).send('<h2>Subject ID not found</h2>');
-    }
-
-    const detailPath = extractDetailPathFromHtml(html, subjectId, title);
-    const detailsUrl = detailPath ? `https://moviebox.ph/movies/${detailPath}?id=${subjectId}` : null;
-
-    const downloadUrl = `https://moviebox.ph/wefeed-h5-bff/web/subject/download?subjectId=${subjectId}&se=0&ep=0`;
-
-    const downloadResp = await axios.get(downloadUrl, {
-      headers: {
-        'accept': 'application/json',
-        'user-agent': 'Mozilla/5.0',
-        'x-client-info': JSON.stringify({ timezone: 'Africa/Lagos' }),
-        'referer': detailsUrl
-      }
-    });
-
-    const data = downloadResp.data?.data || {};
-    const downloads = data.downloads || [];
-    const captions = data.captions || [];
-
-    const videoLinks = downloads.map(item => {
-      const sizeMB = (parseInt(item.size) / (1024 * 1024)).toFixed(2);
-      return `
-        <div class="card">
-          <h3>${item.resolution}p</h3>
-          <p>Size: ${sizeMB} MB</p>
-          <a href="${item.url}" class="button" target="_blank">Download</a>
-        </div>
-      `;
-    }).join('');
-
-    const subtitleLinks = captions.map(sub => {
-      const sizeKB = (parseInt(sub.size) / 1024).toFixed(1);
-      return `
-        <div class="card">
-          <h3>${sub.lanName} (${sub.lan})</h3>
-          <p>Size: ${sizeKB} KB</p>
-          <a href="${sub.url}" class="button" target="_blank">Download Subtitle</a>
-        </div>
-      `;
-    }).join('');
-
     const htmlResponse = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Download - ${title}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-        <style>
-          body {
-            font-family: 'Inter', sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-            color: #222;
-          }
-          h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2rem;
-          }
-          .section {
-            margin-bottom: 40px;
-          }
-          .section h2 {
-            font-size: 1.5rem;
-            color: #444;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 5px;
-          }
-          .card {
-            background: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-            transition: transform 0.2s;
-          }
-          .card:hover {
-            transform: translateY(-4px);
-          }
-          .card h3 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            color: #007BFF;
-          }
-          .card p {
-            margin: 8px 0;
-          }
-          .button {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #007BFF;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: background 0.3s;
-          }
-          .button:hover {
-            background: #0056b3;
-          }
-          @media (min-width: 600px) {
-            .grid {
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-              gap: 20px;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <h1>${title} (${year})</h1>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${title} (${year}) - Downloads</title>
+      <style>
+        body {
+          font-family: 'Inter', sans-serif;
+          background: #f9f9f9;
+          margin: 0;
+          padding: 2rem;
+        }
+        #loading {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(255,255,255,0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+          color: #333;
+          flex-direction: column;
+          z-index: 999;
+        }
+        #spinner {
+          border: 6px solid #f3f3f3;
+          border-top: 6px solid #007BFF;
+          border-radius: 50%;
+          width: 50px;
+          height: 50px;
+          animation: spin 1s linear infinite;
+          margin-bottom: 15px;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        h1 { text-align: center; margin-bottom: 30px; font-size: 2rem; }
+        .section {
+          margin-bottom: 40px;
+          display: none;
+        }
+        .section h2 {
+          font-size: 1.5rem;
+          color: #444;
+          margin-bottom: 15px;
+          border-bottom: 2px solid #ddd;
+          padding-bottom: 5px;
+        }
+        .grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+        }
+        .card {
+          background: #fff;
+          padding: 20px;
+          border-radius: 12px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .card h3 { color: #007BFF; margin: 0 0 8px; }
+        .card p { margin: 4px 0; }
+        .button {
+          display: inline-block;
+          padding: 8px 16px;
+          background: #007BFF;
+          color: white;
+          border-radius: 6px;
+          text-decoration: none;
+          margin-top: 8px;
+        }
+        .button:hover {
+          background: #0056b3;
+        }
+      </style>
+    </head>
+    <body>
+      <div id="loading">
+        <div id="spinner"></div>
+        <div>Loading downloads, please wait...</div>
+      </div>
 
-        <div class="section">
-          <h2>Video Downloads</h2>
-          <div class="grid">
-            ${videoLinks || '<p>No downloads found.</p>'}
-          </div>
-        </div>
+      <h1>${title} (${year})</h1>
 
-        <div class="section">
-          <h2>Subtitles</h2>
-          <div class="grid">
-            ${subtitleLinks || '<p>No subtitles found.</p>'}
-          </div>
-        </div>
-      </body>
-      </html>
+      <div id="video-section" class="section">
+        <h2>Video Downloads</h2>
+        <div id="video-list" class="grid"></div>
+      </div>
+
+      <div id="subtitle-section" class="section">
+        <h2>Subtitles</h2>
+        <div id="subtitle-list" class="grid"></div>
+      </div>
+
+      <script>
+        (async () => {
+          try {
+            const response = await fetch("/api/movie-download-data?tmdbId=${tmdbId}");
+            const result = await response.json();
+
+            if (!result.success) throw new Error(result.error || "Failed to fetch");
+
+            const downloads = result.downloadData.data.downloads || [];
+            const captions = result.downloadData.data.captions || [];
+
+            const videoList = document.getElementById('video-list');
+            const subtitleList = document.getElementById('subtitle-list');
+
+            downloads.forEach(item => {
+              const size = (parseInt(item.size) / (1024 * 1024)).toFixed(2);
+              videoList.innerHTML += \`
+                <div class="card">
+                  <h3>\${item.resolution}p</h3>
+                  <p>Size: \${size} MB</p>
+                  <a href="\${item.url}" target="_blank" class="button">Download</a>
+                </div>
+              \`;
+            });
+
+            captions.forEach(sub => {
+              const size = (parseInt(sub.size) / 1024).toFixed(1);
+              subtitleList.innerHTML += \`
+                <div class="card">
+                  <h3>\${sub.lanName} (\${sub.lan})</h3>
+                  <p>Size: \${size} KB</p>
+                  <a href="\${sub.url}" target="_blank" class="button">Download Subtitle</a>
+                </div>
+              \`;
+            });
+
+            if (downloads.length) document.getElementById('video-section').style.display = 'block';
+            if (captions.length) document.getElementById('subtitle-section').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+
+          } catch (e) {
+            document.getElementById('loading').innerHTML = "<strong>Failed to load download links.</strong>";
+          }
+        })();
+      </script>
+    </body>
+    </html>
     `;
 
     res.send(htmlResponse);
