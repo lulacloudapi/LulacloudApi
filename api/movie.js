@@ -80,7 +80,7 @@ module.exports = async (req, res) => {
         color: #111827;
       }
       .container {
-        max-width: 600px;
+        max-width: 700px;
         margin: 0 auto;
         padding: 2rem;
         background: #fff;
@@ -95,14 +95,13 @@ module.exports = async (req, res) => {
         color: #1f2937;
       }
       .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
         margin-top: 2rem;
-        font-size: 1.125rem;
-        font-weight: 500;
-        border-bottom: 1px solid #e5e7eb;
-        padding-bottom: 0.25rem;
-        color: #374151;
+        margin-bottom: 0.75rem;
+        color: #1f2937;
       }
-      .download-button, .subtitle-button {
+      .download-button {
         display: block;
         background: #10b981;
         color: white;
@@ -113,13 +112,21 @@ module.exports = async (req, res) => {
         border-radius: 0.5rem;
         transition: background 0.2s ease;
       }
-      .subtitle-button {
-        background: #3b82f6;
-      }
       .download-button:hover {
         background: #059669;
       }
-      .subtitle-button:hover {
+      .sub-button {
+        display: block;
+        background: #3b82f6;
+        color: white;
+        padding: 0.6rem 1rem;
+        margin: 0.3rem 0;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        transition: background 0.2s ease;
+      }
+      .sub-button:hover {
         background: #2563eb;
       }
       footer {
@@ -132,31 +139,44 @@ module.exports = async (req, res) => {
   </head>
   <body>
     <div class="container">
-      <h1>Download Options for ${title} (${year})</h1>
+      <h1>Download: ${title} (${year})</h1>
 
-      <div class="section-title">Download Links</div>
+      <div class="section-title">🎬 Video Downloads</div>
       ${
-        downloads?.length
-          ? downloads.map(dl => `
-            <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
-              Download ${dl.resolution || ''} ${dl.size ? `(${dl.size})` : ''} - ${dl.label || 'Video'}
-            </a>
-          `).join('')
-          : '<p>No downloads available.</p>'
+        downloads.length
+          ? downloads
+              .map(dl => {
+                const label = dl.label || 'Unknown Quality';
+                const resolution = dl.resolution || '';
+                const size = dl.size || '';
+                return `
+                  <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
+                    ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
+                  </a>
+                `;
+              })
+              .join('')
+          : '<p>No download links found.</p>'
       }
 
-      <div class="section-title">Subtitle Files</div>
+      <div class="section-title">💬 Subtitles</div>
       ${
-        captions?.length
-          ? captions.map(sub => `
-            <a class="subtitle-button" href="${sub.url}" target="_blank" rel="noopener noreferrer">
-              ${sub.label || 'Subtitle'} (${sub.language || 'unknown'})
-            </a>
-          `).join('')
+        captions && captions.length
+          ? captions
+              .map(c => {
+                const lang = c.label || 'Subtitle';
+                return `
+                  <a class="sub-button" href="${c.file}" target="_blank" rel="noopener noreferrer">
+                    ${lang}
+                  </a>
+                `;
+              })
+              .join('')
           : '<p>No subtitles available.</p>'
       }
     </div>
-    <footer>Lulacloud Downloads API</footer>
+
+    <footer>Powered by Lulacloud × MovieBox API</footer>
   </body>
   </html>
 `;
