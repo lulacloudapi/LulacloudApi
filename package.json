@@ -1,16 +1,8 @@
 {
-  "name": "tv-api",
+  "name": "movie-api",
   "version": "1.0.0",
-  "description": "TV API for Vercel deployment",
-  "main": "tv.js",
-  "type": "module",
-  "scripts": {
-    "start": "node tv.js"
-  },
+  "main": "movie.js",
   "dependencies": {
-    "axios": "^1.10.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "axios": "^1.6.0"
   }
 }
