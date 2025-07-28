@@ -71,11 +71,25 @@ module.exports = async (req, res) => {
       }
     });
 
-    const allCaptions = downloads.flatMap(dl => dl.captions || []);
-const uniqueCaptions = allCaptions.filter((c, i, self) =>
-  c?.url && self.findIndex(x => x.url === c.url) === i
-);
+    // ... keep all the imports, helper functions, and API fetch code above ...
 
+const downloads = downloadResp.data?.data?.downloads || [];
+
+// 1. Collect unique subtitles globally (not per download)
+const subtitles = [];
+const seenSubs = new Set();
+
+for (const dl of downloads) {
+  const captions = dl.captions || [];
+  for (const cap of captions) {
+    if (cap.url && !seenSubs.has(cap.url)) {
+      seenSubs.add(cap.url);
+      subtitles.push(cap);
+    }
+  }
+}
+
+// 2. Build the HTML
 let htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -156,35 +170,33 @@ let htmlContent = `
     <div class="section-title">🎬 Video Downloads</div>
     ${
       downloads.length
-        ? downloads.map(dl => {
-            const label = dl.label || 'HD Quality';
-            const resolution = dl.resolution || '';
-            const rawSize = parseInt(dl.size || 0, 10);
-            const size = rawSize > 0 ? formatFileSize(rawSize) : '';
-            return `
-              <div>
+        ? downloads
+            .map(dl => {
+              const label = dl.label || 'HD Quality';
+              const resolution = dl.resolution || '';
+              const rawSize = parseInt(dl.size || 0, 10);
+              const size = rawSize > 0 ? formatFileSize(rawSize) : '';
+
+              return `
                 <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
                   ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
                 </a>
-              </div>
-            `;
-          }).join('')
-        : '<p>No video download links available.</p>'
+              `;
+            })
+            .join('')
+        : '<p>No download links available.</p>'
     }
 
     ${
-      uniqueCaptions.length > 0
+      subtitles.length
         ? `
-          <div class="section-title">📄 Subtitles</div>
+          <div class="section-title">📝 Subtitles</div>
           <div>
-            ${uniqueCaptions.map(c => {
-              const lang = c.language || 'Subtitle';
-              return `
-                <a class="sub-button" href="${c.url}" target="_blank" rel="noopener noreferrer">
-                  ${lang}
-                </a>
-              `;
-            }).join('')}
+            ${subtitles.map(sub => `
+              <a class="sub-button" href="${sub.url}" target="_blank" rel="noopener noreferrer">
+                ${sub.language || 'Subtitle'}
+              </a>
+            `).join('')}
           </div>
         `
         : ''
@@ -196,7 +208,7 @@ let htmlContent = `
 </html>
 `;
 
-    res.send(htmlContent);
+res.send(htmlContent);
 
   } catch (err) {
     console.error('Server error:', err.message);
