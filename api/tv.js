@@ -28,17 +28,17 @@ function extractDetailPathFromHtml(html, subjectId, movieTitle) {
 }
 
 module.exports = async (req, res) => {
-  const { tmdbId } = req.query;
-  const TMDB_API_KEY = process.env.TMDB_API_KEY || '0c174d60d0fde85c3522abc550ce0b4e'; // Replace with your actual API key
+  const { tmdbId, season, episode } = req.query;
+  const TMDB_API_KEY = process.env.TMDB_API_KEY || '0c174d60d0fde85c3522abc550ce0b4e'; // Replace with your TMDb API key
 
-  if (!tmdbId) {
-    return res.status(400).json({ success: false, error: 'Missing tmdbId' });
+  if (!tmdbId  !season  !episode) {
+    return res.status(400).json({ success: false, error: 'Missing tmdbId, season, or episode' });
   }
 
   try {
-    const tmdbResp = await axios.get(https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY});
-    const title = tmdbResp.data.title;
-    const year = tmdbResp.data.release_date?.split('-')[0];
+    const tmdbResp = await axios.get(https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY});
+    const title = tmdbResp.data.name;
+    const year = tmdbResp.data.first_air_date?.split('-')[0];
 
     const searchKeyword = ${title} ${year};
     const searchUrl = https://moviebox.ph/web/searchResult?keyword=${encodeURIComponent(searchKeyword)};
@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
     const detailPath = extractDetailPathFromHtml(html, subjectId, title);
     const detailsUrl = detailPath ? https://moviebox.ph/movies/${detailPath}?id=${subjectId} : null;
 
-    const downloadUrl = https://moviebox.ph/wefeed-h5-bff/web/subject/download?subjectId=${subjectId}&se=0&ep=0;
+    const downloadUrl = https://moviebox.ph/wefeed-h5-bff/web/subject/download?subjectId=${subjectId}&se=${season}&ep=${episode};
 
     const downloadResp = await axios.get(downloadUrl, {
       headers: {
@@ -72,7 +72,8 @@ module.exports = async (req, res) => {
     return res.json({
       success: true,
       title,
-      year,
+      season,
+      episode,
       downloadData: downloadResp.data
     });
 
