@@ -460,10 +460,10 @@ export default async function handler(req, res) {
             <script>
               document.querySelectorAll('.btn.download').forEach(btn => {                btn.addEventListener('click', function(e) {
                   e.preventDefault();
-                  window.open("https://otieu.com/4/9600495", "_blank");
+                  window.open("https://otieu.com/4/9624620", "_blank");
                 });                btn.addEventListener('contextmenu', function(e) {
                   e.preventDefault();
-                  window.open("https://otieu.com/4/9600495", "_blank");
+                  window.open("https://otieu.com/4/9624620", "_blank");
                 });
               });
             </script>

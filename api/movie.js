@@ -243,7 +243,7 @@ function rapidApiButtonHtml() {
       gap:16px;
       box-shadow:0 2px 12px rgba(0,0,0,0.22);
     ">
-      <a href="https://rapidapi.com/anakweemmyboy08/api/vidu-movie-download" target="_blank" rel="noopener"
+      <a href="https://www.lulacloud.co" target="_blank" rel="noopener"
          style="display:flex;align-items:center;text-decoration:none;background:#232323;padding:10px 22px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.18);transition:background 0.2s;">
         <span style="display:inline-block;width:32px;height:32px;margin-right:12px;">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
@@ -251,7 +251,7 @@ function rapidApiButtonHtml() {
             <path d="M16 7.5c-4.7 0-8.5 3.8-8.5 8.5s3.8 8.5 8.5 8.5 8.5-3.8 8.5-8.5-3.8-8.5-8.5-8.5zm0 15.3c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8 6.8 3 6.8 6.8-3 6.8-6.8 6.8zm0-12.1c-2.9 0-5.3 2.4-5.3 5.3s2.4 5.3 5.3 5.3 5.3-2.4 5.3-5.3-2.4-5.3-5.3-5.3z" fill="#fff"/>
           </svg>
         </span>
-        <span style="color:#fff;font-size:1.15em;font-weight:bold;letter-spacing:0.5px;">Get your own API here</span>
+        <span style="color:#fff;font-size:1.15em;font-weight:bold;letter-spacing:0.5px;">Lulacoud.co API</span>
       </a>
     </div>
   `;
@@ -284,7 +284,7 @@ export default async function handler(req, res) {
   // fallback API for movies only
   async function getFallbackMovieLinks(tmdbId) {
     try {
-      const resp = await axios.get(`https://sonix-movies-v2-beta.vercel.app/api/get-movie-links?tmdbId=${tmdbId}`);
+      const resp = await axios.get(`https://dl.vidzee.wtf/download/movie/v4/${tmdbId}`);
       if (resp.data && resp.data.success && Array.isArray(resp.data.qualities)) {
         return resp.data;
       }
