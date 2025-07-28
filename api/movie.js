@@ -64,33 +64,34 @@ module.exports = async (req, res) => {
 
     const downloadResp = await axios.get(downloadUrl, {
       headers: {
-        'accept': 'application/json',
+        accept: 'application/json',
         'user-agent': 'Mozilla/5.0',
         'x-client-info': JSON.stringify({ timezone: 'Africa/Lagos' }),
-        'referer': detailsUrl
+        referer: detailsUrl
       }
     });
 
-    // ... keep all the imports, helper functions, and API fetch code above ...
+    const downloads = downloadResp.data?.data?.downloads || [];
 
-const downloads = downloadResp.data?.data?.downloads || [];
+    // ✅ Extract subtitles
+    const subtitles = [];
+    const seenSubs = new Set();
 
-// 1. Collect unique subtitles globally (not per download)
-const subtitles = [];
-const seenSubs = new Set();
-
-for (const dl of downloads) {
-  const captions = dl.captions || [];
-  for (const cap of captions) {
-    if (cap.url && !seenSubs.has(cap.url)) {
-      seenSubs.add(cap.url);
-      subtitles.push(cap);
+    for (const dl of downloads) {
+      const captions = dl.captions || [];
+      for (const cap of captions) {
+        if (cap.url && !seenSubs.has(cap.url)) {
+          seenSubs.add(cap.url);
+          subtitles.push({
+            url: cap.url,
+            language: cap.lanName || cap.lan || 'Unknown'
+          });
+        }
+      }
     }
-  }
-}
 
-// 2. Build the HTML
-let htmlContent = `
+    // ✅ HTML Template
+    let htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -170,21 +171,18 @@ let htmlContent = `
     <div class="section-title">🎬 Video Downloads</div>
     ${
       downloads.length
-        ? downloads
-            .map(dl => {
-              const label = dl.label || 'HD Quality';
-              const resolution = dl.resolution || '';
-              const rawSize = parseInt(dl.size || 0, 10);
-              const size = rawSize > 0 ? formatFileSize(rawSize) : '';
+        ? downloads.map(dl => {
+            const label = dl.label || 'HD';
+            const resolution = dl.resolution ? `${dl.resolution}` : '';
+            const size = dl.size ? formatFileSize(parseInt(dl.size)) : '';
 
-              return `
-                <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
-                  ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
-                </a>
-              `;
-            })
-            .join('')
-        : '<p>No download links available.</p>'
+            return `
+              <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
+                ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
+              </a>
+            `;
+          }).join('')
+        : '<p>No video downloads found.</p>'
     }
 
     ${
@@ -194,7 +192,7 @@ let htmlContent = `
           <div>
             ${subtitles.map(sub => `
               <a class="sub-button" href="${sub.url}" target="_blank" rel="noopener noreferrer">
-                ${sub.language || 'Subtitle'}
+                ${sub.language}
               </a>
             `).join('')}
           </div>
@@ -205,11 +203,9 @@ let htmlContent = `
     <footer>Powered by Lulacloud Downloads</footer>
   </div>
 </body>
-</html>
-`;
+</html>`;
 
-res.send(htmlContent);
-
+    res.send(htmlContent);
   } catch (err) {
     console.error('Server error:', err.message);
     res.status(500).send(`<h2>Internal Server Error</h2><p>${err.message}</p>`);
