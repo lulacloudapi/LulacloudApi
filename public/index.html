@@ -1,1 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Public Download API Documentations</title>
 
+  <!-- Google tag (gtag.js) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: radial-gradient(ellipse at top left, #232a3b 60%, #181c24 100%);
+      color: #e3e6ee;
+      min-height: 100vh;
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    .header {
+      width: 100vw;
+      background: linear-gradient(90deg, #232a3b 0%, #2563eb 100%);
+      padding: 40px 0 24px 0;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+      position: relative;
+      z-index: 2;
+    }
+    .header h1 {
+      font-size: 2.7rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      color: #fff;
+      margin: 0 0 10px 0;
+      text-shadow: 0 2px 16px #2563eb44;
+    }
+    .header p {
+      color: #a5b4fc;
+      font-size: 1.18rem;
+      margin: 0;
+      font-weight: 500;
+      text-shadow: 0 1px 8px #232a3b88;
+    }
+    .main-content {
+      flex: 1;
+      width: 100vw;
+      max-width: 100vw;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      position: relative;
+      z-index: 1;
+    }
+    .section {
+      width: 100vw;
+      max-width: 100vw;
+      padding: 40px 0;
+      background: rgba(30,34,44,0.98);
+      border-bottom: 1px solid #232a3b;
+      box-sizing: border-box;
+      position: relative;
+      overflow: visible;
+    }
+    .section-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 1.1rem;
+      color: #60a5fa;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 12px #2563eb22;
+    }
+    p {
+      font-size: 1.13rem;
+      margin-bottom: 1.1rem;
+      color: #e3e6ee;
+      line-height: 1.7;
+      text-shadow: 0 1px 8px #232a3b44;
+    }
+    code {
+      background: #181c24;
+      color: #60a5fa;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 1.08em;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      margin: 0 2px;
+      box-shadow: 0 2px 8px #2563eb22;
+      border: 1px solid #232a3b;
+    }
+    .endpoint {
+      background: linear-gradient(90deg, #232a3b 60%, #181c24 100%);
+      border: 1px solid #374151;
+      border-radius: 16px;
+      padding: 1.5rem 1.2rem;
+      margin: 2rem 0;
+      box-shadow: 0 4px 24px #2563eb22;
+      transition: box-shadow 0.2s;
+    }
+    .endpoint h2 {
+      margin-top: 0;
+      color: #60a5fa;
+      font-size: 1.15rem;
+      font-weight: 600;
+      text-shadow: 0 2px 12px #2563eb22;
+    }
+    a {
+      color: #60a5fa;
+      text-decoration: none;
+      transition: color 0.2s;
+      word-break: break-all;
+      font-weight: 600;
+    }
+    a:hover {
+      color: #2563eb;
+      text-decoration: underline;
+    }
+    .footer {
+      width: 100vw;
+      background: linear-gradient(90deg, #232a3b 0%, #2563eb 100%);
+      text-align: center;
+      padding: 28px 0 16px 0;
+      color: #a5b4fc;
+      font-size: 1.08rem;
+      margin-top: auto;
+      letter-spacing: 0.5px;
+      box-shadow: 0 -2px 16px #232a3b88;
+    }
+    .highlight {
+      color: #60a5fa;
+      font-weight: 700;
+      font-size: 1.08em;
+    }
+    @media (max-width: 700px) {
+      .section-inner {
+        padding: 0 8px;
+      }
+      .header h1 {
+        font-size: 1.45rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+      }
+      .endpoint {
+        padding: 1rem 0.5rem;
+        border-radius: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Lulacloud Download API </h1>
+    <p>
+      Fetch direct download links for <span class="highlight">movies</span> and <span class="highlight">TV episodes</span> using TMDb IDs.<br>
+      <span class="highlight">Fast, simple, and free.</span>
+    </p>
+  </div>
+  <div class="main-content">
+    <div class="section">
+      <div class="section-inner">
+        <h2>🎬 Movie Endpoint</h2>
+        <div class="endpoint">
+          <p><strong>GET</strong> <code>/api/movie?tmdbId={movie_id}</code></p>
+          <p>
+            <strong>Example:</strong>
+            <a href="/api/movie?tmdbId=1426776" target="_blank">
+              /api/movie?tmdbId=1426776
+            </a>
+          </p>
+          <p>
+            <strong>Description:</strong> Returns download links for a specific movie based on its TMDb ID.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-inner">
+        <h2>📺 TV Show Episode Endpoint</h2>
+        <div class="endpoint">
+          <p><strong>GET</strong> <code>/api/tv?tmdbId={show_id}&season={season_number}&episode={episode_number}</code></p>
+          <p>
+            <strong>Example:</strong>
+            <a href="/api/tv?tmdbId=1399&season=1&episode=1" target="_blank">
+              /api/tv?tmdbId=1399&season=1&episode=1
+            </a>
+          </p>
+          <p>
+            <strong>Description:</strong> Returns download links for a specific episode of a TV show using the TMDb ID, season, and episode number.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-inner">
+        <h2>🛠️ How to Get TMDb IDs</h2>
+        <p>
+          Find TMDb IDs at <a href="https://www.themoviedb.org" target="_blank">TMDb.org</a> by searching for a movie or show and checking the URL.<br>
+          <span style="font-size:0.98em;">Example: <code>https://www.themoviedb.org/movie/1426776</code> → <strong>tmdbId = 1426776</strong></span>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    &copy; 2025 Lulacloud Download API
+  </div>
+</body>
+</html>
