@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
   const TMDB_API_KEY = process.env.TMDB_API_KEY || '0c174d60d0fde85c3522abc550ce0b4e';
 
   if (!tmdbId || !season || !episode) {
-    return res.status(400).json({ success: false, error: 'Missing tmdbId, season, or episode' });
+    return res.status(400).send('<h2>Missing tmdbId, season, or episode</h2>');
   }
 
   try {
@@ -45,22 +45,19 @@ module.exports = async (req, res) => {
     const searchUrl = `https://moviebox.ph/web/searchResult?keyword=${encodeURIComponent(searchKeyword)}`;
 
     const searchResp = await axios.get(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      }
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
     });
     const html = searchResp.data;
 
     const subjectId = extractSubjectId(html, title);
     if (!subjectId) {
-      return res.status(404).json({ success: false, error: 'subjectId not found in HTML' });
+      return res.status(404).send('<h2>Subject ID not found</h2>');
     }
 
     const detailPath = extractDetailPathFromHtml(html, subjectId, title);
     const detailsUrl = detailPath ? `https://moviebox.ph/movies/${detailPath}?id=${subjectId}` : null;
 
     const downloadUrl = `https://moviebox.ph/wefeed-h5-bff/web/subject/download?subjectId=${subjectId}&se=${season}&ep=${episode}`;
-
     const downloadResp = await axios.get(downloadUrl, {
       headers: {
         'accept': 'application/json',
@@ -70,16 +67,56 @@ module.exports = async (req, res) => {
       }
     });
 
-    return res.json({
-      success: true,
-      title,
-      season,
-      episode,
-      downloadData: downloadResp.data
-    });
+    const data = downloadResp.data?.data || {};
+    const downloads = data.downloads || [];
+    const captions = data.captions || [];
+
+    const videoLinks = downloads.map(item => {
+      const sizeMB = (parseInt(item.size) / (1024 * 1024)).toFixed(2);
+      return `<div class="item"><strong>${item.resolution}p</strong> - ${sizeMB} MB<br>
+              <a href="${item.url}" target="_blank">Download</a></div>`;
+    }).join('');
+
+    const subtitleLinks = captions.map(sub => {
+      const sizeKB = (parseInt(sub.size) / 1024).toFixed(1);
+      return `<div class="item"><strong>${sub.lanName} (${sub.lan})</strong> - ${sizeKB} KB<br>
+              <a href="${sub.url}" target="_blank">Download Subtitle</a></div>`;
+    }).join('');
+
+    const htmlResponse = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Downloads - ${title}</title>
+        <style>
+          body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 2rem; }
+          h1, h2 { color: #333; }
+          .section { background: white; padding: 1rem; margin-top: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+          .item { margin: 1rem 0; }
+          a { color: #007BFF; text-decoration: none; font-weight: bold; }
+          a:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <h1>${title} - S${season}E${episode}</h1>
+        
+        <div class="section">
+          <h2>Video Downloads</h2>
+          ${videoLinks || '<p>No downloads found.</p>'}
+        </div>
+
+        <div class="section">
+          <h2>Subtitles</h2>
+          ${subtitleLinks || '<p>No subtitles found.</p>'}
+        </div>
+      </body>
+      </html>
+    `;
+
+    res.send(htmlResponse);
 
   } catch (err) {
     console.error('Server error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).send(`<h2>Internal server error</h2><pre>${err.message}</pre>`);
   }
 };
