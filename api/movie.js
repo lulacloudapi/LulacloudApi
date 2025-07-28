@@ -8,12 +8,16 @@ function extractSubjectId(html, movieTitle) {
 }
 
 function extractDetailPathFromHtml(html, subjectId, movieTitle) {
-  const slug = movieTitle.trim().toLowerCase().replace(/['’]/g, '')
-    .replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-';
+  const slug = movieTitle.trim().toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') + '-';
 
   const idPattern = new RegExp(`${subjectId}`);
   const idMatch = idPattern.exec(html);
   if (!idMatch) return null;
+
   const before = html.substring(0, idMatch.index);
   const detailPathRegex = new RegExp(`((?:${slug})[^"]+)`, 'gi');
   let match, lastMatch = null;
@@ -73,7 +77,7 @@ module.exports = async (req, res) => {
 
     const downloads = downloadResp.data?.data?.downloads || [];
 
-    let htmlContent = `
+    const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -153,37 +157,34 @@ module.exports = async (req, res) => {
         <div class="section-title">🎬 Video Downloads</div>
         ${
           downloads.length
-            ? downloads
-                .map(dl => {
-                  const label = dl.label || 'HD Quality';
-                  const resolution = dl.resolution || '';
-                  const rawSize = parseInt(dl.size || 0, 10);
-                  const size = rawSize > 0 ? formatFileSize(rawSize) : '';
-                  const captions = dl.captions || [];
+            ? downloads.map(dl => {
+                const label = dl.label || 'HD Quality';
+                const resolution = dl.resolution || '';
+                const rawSize = parseInt(dl.size || 0, 10);
+                const size = rawSize > 0 ? formatFileSize(rawSize) : '';
+                const captions = Array.isArray(dl.captions) ? dl.captions : [];
 
-                  const captionLinks = captions.map(c => {
-                    const lang = c.language || 'Subtitle';
-                    return `
-                      <a class="sub-button" href="${c.url}" target="_blank" rel="noopener noreferrer">
-                        ${lang}
-                      </a>
-                    `;
-                  }).join('');
-
+                const captionLinks = captions.map(c => {
+                  const lang = c.language || 'Subtitle';
                   return `
-                    <div>
-                      <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
-                        ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
-                      </a>
-                      ${captions.length ? `<div>${captionLinks}</div>` : ''}
-                    </div>
-                  `;
-                })
-                .join('')
+                    <a class="sub-button" href="${c.url}" target="_blank" rel="noopener noreferrer">
+                      ${lang}
+                    </a>`;
+                }).join('');
+
+                return `
+                  <div>
+                    <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
+                      ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
+                    </a>
+                    ${captionLinks ? `<div>${captionLinks}</div>` : ''}
+                  </div>
+                `;
+              }).join('')
             : '<p>No download links available.</p>'
         }
 
-        <footer>Powered by Lulacloud × MovieBox</footer>
+        <footer>Powered by Lulacloud Downloads</footer>
       </div>
     </body>
     </html>
