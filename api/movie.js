@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
   const TMDB_API_KEY = process.env.TMDB_API_KEY || '0c174d60d0fde85c3522abc550ce0b4e';
 
   if (!tmdbId) {
-    return res.status(400).json({ success: false, error: 'Missing tmdbId' });
+    return res.send('<h2>Error: Missing tmdbId</h2>');
   }
 
   try {
@@ -38,20 +38,18 @@ module.exports = async (req, res) => {
 
     const searchKeyword = `${title} ${year}`;
     const searchUrl = `https://moviebox.ph/web/searchResult?keyword=${encodeURIComponent(searchKeyword)}`;
-
     const searchResp = await axios.get(searchUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
     });
-    const html = searchResp.data;
 
+    const html = searchResp.data;
     const subjectId = extractSubjectId(html, title);
     if (!subjectId) {
-      return res.status(404).json({ success: false, error: 'subjectId not found in HTML' });
+      return res.send('<h2>Subject ID not found</h2>');
     }
 
     const detailPath = extractDetailPathFromHtml(html, subjectId, title);
     const detailsUrl = detailPath ? `https://moviebox.ph/movies/${detailPath}?id=${subjectId}` : null;
-
     const downloadUrl = `https://moviebox.ph/wefeed-h5-bff/web/subject/download?subjectId=${subjectId}&se=0&ep=0`;
 
     const downloadResp = await axios.get(downloadUrl, {
@@ -63,15 +61,26 @@ module.exports = async (req, res) => {
       }
     });
 
-    return res.json({
-      success: true,
-      title,
-      year,
-      downloadData: downloadResp.data
-    });
+    const downloads = downloadResp.data?.data?.downloads || [];
+
+    // ✅ Render a simple HTML page with download buttons
+    let htmlContent = `
+      <h1>Download Options for ${title} (${year})</h1>
+      <ul>
+        ${downloads.map(dl => `
+          <li>
+            <a href="${dl.url}" target="_blank" style="padding: 8px 16px; background: #10b981; color: white; border-radius: 5px; text-decoration: none; display: inline-block; margin: 5px 0;">
+              Download (${dl.label || 'Unknown Quality'})
+            </a>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+
+    res.send(htmlContent);
 
   } catch (err) {
     console.error('Server error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).send(`<h2>Internal Server Error</h2><p>${err.message}</p>`);
   }
 };
