@@ -202,7 +202,7 @@ let htmlContent = `
         : ''
     }
 
-    <footer>Powered by Lulacloud Downloads</footer>
+    <footer>Lulacloud Downloads</footer>
   </div>
 </body>
 </html>
