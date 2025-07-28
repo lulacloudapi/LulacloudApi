@@ -65,70 +65,116 @@ module.exports = async (req, res) => {
 
     // ✅ Render a simple HTML page with download buttons
     let htmlContent = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Download ${title} (${year}) - Lulacloud</title>
-        <style>
-          body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f9fafb;
-            margin: 0;
-            padding: 20px;
-            color: #111827;
-          }
-          .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: #fff;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          }
-          h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1.25rem;
-            text-align: center;
-            color: #1f2937;
-          }
-          .download-button {
-            display: block;
-            background: #10b981;
-            color: white;
-            padding: 0.75rem 1rem;
-            margin: 0.5rem 0;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 0.5rem;
-            transition: background 0.2s ease;
-          }
-          .download-button:hover {
-            background: #059669;
-          }
-          footer {
-            margin-top: 2rem;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #6b7280;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>Download Options for ${title} (${year})</h1>
-          ${downloads.length ? downloads.map(dl => `
-            <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
-              Download ${dl.label || ' Quality'}
-            </a>
-          `).join('') : '<p>No download links available.</p>'}
-        </div>
-        <footer>Lulacloud × API</footer>
-      </body>
-      </html>
-    `;
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Download ${title} (${year}) - Lulacloud</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #f3f4f6;
+        margin: 0;
+        padding: 20px;
+        color: #111827;
+      }
+      .container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: #ffffff;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      }
+      h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: #1f2937;
+      }
+      .download-card {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .download-card h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #111827;
+      }
+      .meta {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        color: #374151;
+      }
+      .subtitle-list {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #4b5563;
+      }
+      .subtitle-list li {
+        margin-bottom: 0.25rem;
+      }
+      .subtitle-list a {
+        color: #3b82f6;
+        text-decoration: underline;
+        font-weight: 500;
+      }
+      .download-link {
+        display: inline-block;
+        margin-top: 0.75rem;
+        padding: 0.6rem 1.25rem;
+        background-color: #10b981;
+        color: white;
+        border-radius: 0.4rem;
+        text-decoration: none;
+        transition: background 0.2s ease;
+      }
+      .download-link:hover {
+        background-color: #059669;
+      }
+      footer {
+        margin-top: 2rem;
+        text-align: center;
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Download Options for ${title} (${year})</h1>
+      ${downloads.length ? downloads.map(dl => {
+        const label = dl.label || 'Unknown Quality';
+        const size = dl.size || 'Unknown Size';
+        const subtitles = dl.subtitles?.length
+          ? `<ul class="subtitle-list">
+              ${dl.subtitles.map(sub => `
+                <li>${sub.language.toUpperCase()}: 
+                  <a href="${sub.url}" target="_blank" rel="noopener noreferrer">Download Subtitle</a>
+                </li>`).join('')}
+            </ul>`
+          : '<p class="subtitle-list">No subtitles available.</p>';
+
+        return `
+          <div class="download-card">
+            <h2>${label}</h2>
+            <div class="meta">Size: ${size}</div>
+            ${subtitles}
+            <a class="download-link" href="${dl.url}" target="_blank" rel="noopener noreferrer">Download Video</a>
+          </div>
+        `;
+      }).join('') : '<p>No download links available.</p>'}
+    </div>
+    <footer>Lulacloud Downloads API</footer>
+  </body>
+  </html>
+`;
 
     res.send(htmlContent);
 
