@@ -23,6 +23,16 @@ function extractDetailPathFromHtml(html, subjectId, movieTitle) {
   return lastMatch;
 }
 
+function formatFileSize(bytes) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0;
+  while (bytes >= 1024 && i < units.length - 1) {
+    bytes /= 1024;
+    i++;
+  }
+  return `${bytes.toFixed(2)} ${units[i]}`;
+}
+
 module.exports = async (req, res) => {
   const { tmdbId } = req.query;
   const TMDB_API_KEY = process.env.TMDB_API_KEY || '0c174d60d0fde85c3522abc550ce0b4e';
@@ -79,7 +89,7 @@ module.exports = async (req, res) => {
           color: #111827;
         }
         .container {
-          max-width: 700px;
+          max-width: 800px;
           margin: 0 auto;
           padding: 2rem;
           background: #fff;
@@ -87,14 +97,13 @@ module.exports = async (req, res) => {
           box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         h1 {
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin-bottom: 1.25rem;
+          font-size: 1.8rem;
+          font-weight: 700;
           text-align: center;
           color: #1f2937;
         }
         .section-title {
-          font-size: 1.1rem;
+          font-size: 1.2rem;
           font-weight: 600;
           margin-top: 2rem;
           margin-bottom: 0.75rem;
@@ -102,36 +111,37 @@ module.exports = async (req, res) => {
         }
         .download-button {
           display: block;
-          background: #10b981;
+          background: linear-gradient(to right, #10b981, #059669);
           color: white;
-          padding: 0.75rem 1rem;
-          margin: 0.5rem 0;
+          padding: 0.8rem 1rem;
+          margin: 0.75rem 0;
           text-align: center;
           text-decoration: none;
           border-radius: 0.5rem;
-          transition: background 0.2s ease;
+          font-weight: 600;
+          transition: background 0.3s ease;
         }
         .download-button:hover {
-          background: #059669;
+          background: linear-gradient(to right, #059669, #047857);
         }
         .sub-button {
           display: inline-block;
           background: #3b82f6;
           color: white;
-          padding: 0.6rem 1rem;
+          padding: 0.5rem 0.8rem;
           margin: 0.3rem 0.3rem 0 0;
           text-align: center;
           text-decoration: none;
-          border-radius: 0.5rem;
-          transition: background 0.2s ease;
+          border-radius: 0.375rem;
+          font-size: 0.9rem;
         }
         .sub-button:hover {
           background: #2563eb;
         }
         footer {
-          margin-top: 2rem;
+          margin-top: 3rem;
           text-align: center;
-          font-size: 0.85rem;
+          font-size: 0.9rem;
           color: #6b7280;
         }
       </style>
@@ -147,7 +157,8 @@ module.exports = async (req, res) => {
                 .map(dl => {
                   const label = dl.label || 'HD Quality';
                   const resolution = dl.resolution || '';
-                  const size = dl.size || '';
+                  const rawSize = parseInt(dl.size || 0, 10);
+                  const size = rawSize > 0 ? formatFileSize(rawSize) : '';
                   const captions = dl.captions || [];
 
                   const captionLinks = captions.map(c => {
@@ -172,8 +183,8 @@ module.exports = async (req, res) => {
             : '<p>No download links available.</p>'
         }
 
+        <footer>Powered by Lulacloud × MovieBox</footer>
       </div>
-      <footer>Powered by Lulacloud Downloads API</footer>
     </body>
     </html>
     `;
