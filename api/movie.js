@@ -354,6 +354,7 @@ module.exports = async (req, res) => {
             ${subtitleLinks || '<p>No subtitles found.</p>'}
           </div>
         </div>
+        <script data-cfasync="false" async type="text/javascript" src="//ib.bobafidges.com/rt13m7m1HTYPHCqgp/126835"></script>
       </body>
       </html>
     `;
@@ -367,7 +368,6 @@ module.exports = async (req, res) => {
 };
       </div>
         </div>
-  <script data-cfasync="false" async type="text/javascript" src="//vd.nosydorymen.com/rhMnzO3aBEuOs9wL/126835"></script>
       </body>
       </html>
     `;
