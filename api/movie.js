@@ -65,16 +65,69 @@ module.exports = async (req, res) => {
 
     // ✅ Render a simple HTML page with download buttons
     let htmlContent = `
-      <h1>Download Options for ${title} (${year})</h1>
-      <ul>
-        ${downloads.map(dl => `
-          <li>
-            <a href="${dl.url}" target="_blank" style="padding: 8px 16px; background: #10b981; color: white; border-radius: 5px; text-decoration: none; display: inline-block; margin: 5px 0;">
-              Download (${dl.label || 'Unknown Quality'})
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Download ${title} (${year}) - Lulacloud</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 20px;
+            color: #111827;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          }
+          h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            text-align: center;
+            color: #1f2937;
+          }
+          .download-button {
+            display: block;
+            background: #10b981;
+            color: white;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: background 0.2s ease;
+          }
+          .download-button:hover {
+            background: #059669;
+          }
+          footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6b7280;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Download Options for ${title} (${year})</h1>
+          ${downloads.length ? downloads.map(dl => `
+            <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
+              Download ${dl.label || ' Quality'}
             </a>
-          </li>
-        `).join('')}
-      </ul>
+          `).join('') : '<p>No download links available.</p>'}
+        </div>
+        <footer>Lulacloud × API</footer>
+      </body>
+      </html>
     `;
 
     res.send(htmlContent);
