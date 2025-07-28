@@ -8,16 +8,12 @@ function extractSubjectId(html, movieTitle) {
 }
 
 function extractDetailPathFromHtml(html, subjectId, movieTitle) {
-  const slug = movieTitle.trim().toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') + '-';
+  const slug = movieTitle.trim().toLowerCase().replace(/['’]/g, '')
+    .replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-';
 
   const idPattern = new RegExp(`${subjectId}`);
   const idMatch = idPattern.exec(html);
   if (!idMatch) return null;
-
   const before = html.substring(0, idMatch.index);
   const detailPathRegex = new RegExp(`((?:${slug})[^"]+)`, 'gi');
   let match, lastMatch = null;
