@@ -145,7 +145,7 @@ module.exports = async (req, res) => {
           downloads.length
             ? downloads
                 .map(dl => {
-                  const label = dl.label || 'Unknown Quality';
+                  const label = dl.label || 'HD Quality';
                   const resolution = dl.resolution || '';
                   const size = dl.size || '';
                   const captions = dl.captions || [];
@@ -173,7 +173,7 @@ module.exports = async (req, res) => {
         }
 
       </div>
-      <footer>Powered by Lulacloud × MovieBox API</footer>
+      <footer>Powered by Lulacloud Downloads API</footer>
     </body>
     </html>
     `;
