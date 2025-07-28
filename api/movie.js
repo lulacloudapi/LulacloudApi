@@ -42,14 +42,10 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // TMDB Metadata
     const tmdbResp = await axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}`);
     const title = tmdbResp.data.title;
     const year = tmdbResp.data.release_date?.split('-')[0];
-    const backdropPath = tmdbResp.data.backdrop_path;
-    const backdropUrl = backdropPath ? `https://image.tmdb.org/t/p/original${backdropPath}` : '';
 
-    // Moviebox search and download info
     const searchKeyword = `${title} ${year}`;
     const searchUrl = `https://moviebox.ph/web/searchResult?keyword=${encodeURIComponent(searchKeyword)}`;
     const searchResp = await axios.get(searchUrl, {
@@ -75,23 +71,26 @@ module.exports = async (req, res) => {
       }
     });
 
-    const downloads = downloadResp.data?.data?.downloads || [];
+    // ... keep all the imports, helper functions, and API fetch code above ...
 
-    // Collect unique subtitles
-    const subtitles = [];
-    const seenSubs = new Set();
-    for (const dl of downloads) {
-      const captions = dl.captions || [];
-      for (const cap of captions) {
-        if (cap.url && !seenSubs.has(cap.url)) {
-          seenSubs.add(cap.url);
-          subtitles.push(cap);
-        }
-      }
+const downloads = downloadResp.data?.data?.downloads || [];
+
+// 1. Collect unique subtitles globally (not per download)
+const subtitles = [];
+const seenSubs = new Set();
+
+for (const dl of downloads) {
+  const captions = dl.captions || [];
+  for (const cap of captions) {
+    if (cap.url && !seenSubs.has(cap.url)) {
+      seenSubs.add(cap.url);
+      subtitles.push(cap);
     }
+  }
+}
 
-    // HTML Response
-    let htmlContent = `
+// 2. Build the HTML
+let htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,29 +102,22 @@ module.exports = async (req, res) => {
       font-family: 'Segoe UI', sans-serif;
       background-color: #f9fafb;
       margin: 0;
-      padding: 0;
+      padding: 20px;
       color: #111827;
-    }
-    .header {
-      background-image: url('${backdropUrl}');
-      background-size: cover;
-      background-position: center;
-      padding: 3rem 2rem;
-      text-align: center;
-      color: white;
-    }
-    .header h1 {
-      font-size: 2rem;
-      margin: 0;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
     }
     .container {
       max-width: 800px;
-      margin: -2rem auto 0;
+      margin: 0 auto;
       padding: 2rem;
       background: #fff;
       border-radius: 0.75rem;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      text-align: center;
+      color: #1f2937;
     }
     .section-title {
       font-size: 1.2rem;
@@ -163,10 +155,6 @@ module.exports = async (req, res) => {
     .sub-button:hover {
       background: #2563eb;
     }
-    .dl-label {
-      margin-left: 0.4rem;
-      font-size: 1rem;
-    }
     footer {
       margin-top: 3rem;
       text-align: center;
@@ -176,26 +164,26 @@ module.exports = async (req, res) => {
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Download: ${title} (${year})</h1>
-  </div>
   <div class="container">
+    <h1>Download: ${title} (${year})</h1>
 
     <div class="section-title">🎬 Video Downloads</div>
     ${
       downloads.length
-        ? downloads.map(dl => {
-            const label = dl.label || 'HD Quality';
-            const resolution = dl.resolution || '';
-            const rawSize = parseInt(dl.size || 0, 10);
-            const size = rawSize > 0 ? formatFileSize(rawSize) : '';
+        ? downloads
+            .map(dl => {
+              const label = dl.label || 'HD Quality';
+              const resolution = dl.resolution || '';
+              const rawSize = parseInt(dl.size || 0, 10);
+              const size = rawSize > 0 ? formatFileSize(rawSize) : '';
 
-            return `
-              <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
-                ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
-              </a>
-            `;
-          }).join('')
+              return `
+                <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
+                  ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
+                </a>
+              `;
+            })
+            .join('')
         : '<p>No download links available.</p>'
     }
 
@@ -206,8 +194,7 @@ module.exports = async (req, res) => {
           <div>
             ${subtitles.map(sub => `
               <a class="sub-button" href="${sub.url}" target="_blank" rel="noopener noreferrer">
-                ${sub.lanName || sub.language || 'Subtitle'}
-                <span class="dl-label">&#8681; Download</span>
+                ${sub.language || 'Subtitle'}
               </a>
             `).join('')}
           </div>
@@ -221,7 +208,7 @@ module.exports = async (req, res) => {
 </html>
 `;
 
-    res.send(htmlContent);
+res.send(htmlContent);
 
   } catch (err) {
     console.error('Server error:', err.message);
