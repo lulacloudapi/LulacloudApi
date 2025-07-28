@@ -23,22 +23,12 @@ function extractDetailPathFromHtml(html, subjectId, movieTitle) {
   return lastMatch;
 }
 
-function formatFileSize(bytes) {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let i = 0;
-  while (bytes >= 1024 && i < units.length - 1) {
-    bytes /= 1024;
-    i++;
-  }
-  return `${bytes.toFixed(2)} ${units[i]}`;
-}
-
 module.exports = async (req, res) => {
   const { tmdbId } = req.query;
   const TMDB_API_KEY = process.env.TMDB_API_KEY || '0c174d60d0fde85c3522abc550ce0b4e';
 
   if (!tmdbId) {
-    return res.send('<h2>Error: Missing tmdbId</h2>');
+    return res.status(400).send('<h2>Missing tmdbId</h2>');
   }
 
   try {
@@ -48,18 +38,20 @@ module.exports = async (req, res) => {
 
     const searchKeyword = `${title} ${year}`;
     const searchUrl = `https://moviebox.ph/web/searchResult?keyword=${encodeURIComponent(searchKeyword)}`;
+
     const searchResp = await axios.get(searchUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
     });
-
     const html = searchResp.data;
+
     const subjectId = extractSubjectId(html, title);
     if (!subjectId) {
-      return res.send('<h2>Subject ID not found</h2>');
+      return res.status(404).send('<h2>Subject ID not found</h2>');
     }
 
     const detailPath = extractDetailPathFromHtml(html, subjectId, title);
     const detailsUrl = detailPath ? `https://moviebox.ph/movies/${detailPath}?id=${subjectId}` : null;
+
     const downloadUrl = `https://moviebox.ph/wefeed-h5-bff/web/subject/download?subjectId=${subjectId}&se=0&ep=0`;
 
     const downloadResp = await axios.get(downloadUrl, {
@@ -71,147 +63,128 @@ module.exports = async (req, res) => {
       }
     });
 
-    // ... keep all the imports, helper functions, and API fetch code above ...
+    const data = downloadResp.data?.data || {};
+    const downloads = data.downloads || [];
+    const captions = data.captions || [];
 
-const downloads = downloadResp.data?.data?.downloads || [];
+    const videoLinks = downloads.map(item => {
+      const sizeMB = (parseInt(item.size) / (1024 * 1024)).toFixed(2);
+      return `
+        <div class="card">
+          <h3>${item.resolution}p</h3>
+          <p>Size: ${sizeMB} MB</p>
+          <a href="${item.url}" class="button" target="_blank">Download</a>
+        </div>
+      `;
+    }).join('');
 
-// 1. Collect unique subtitles globally (not per download)
-const subtitles = [];
-const seenSubs = new Set();
+    const subtitleLinks = captions.map(sub => {
+      const sizeKB = (parseInt(sub.size) / 1024).toFixed(1);
+      return `
+        <div class="card">
+          <h3>${sub.lanName} (${sub.lan})</h3>
+          <p>Size: ${sizeKB} KB</p>
+          <a href="${sub.url}" class="button" target="_blank">Download Subtitle</a>
+        </div>
+      `;
+    }).join('');
 
-for (const dl of downloads) {
-  const captions = dl.captions || [];
-  for (const cap of captions) {
-    if (cap.url && !seenSubs.has(cap.url)) {
-      seenSubs.add(cap.url);
-      subtitles.push(cap);
-    }
-  }
-}
+    const htmlResponse = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Download - ${title}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+        <style>
+          body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            color: #222;
+          }
+          h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+          }
+          .section {
+            margin-bottom: 40px;
+          }
+          .section h2 {
+            font-size: 1.5rem;
+            color: #444;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+          }
+          .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+          }
+          .card:hover {
+            transform: translateY(-4px);
+          }
+          .card h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #007BFF;
+          }
+          .card p {
+            margin: 8px 0;
+          }
+          .button {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #007BFF;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.3s;
+          }
+          .button:hover {
+            background: #0056b3;
+          }
+          @media (min-width: 600px) {
+            .grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+              gap: 20px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>${title} (${year})</h1>
 
-// 2. Build the HTML
-let htmlContent = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Download ${title} (${year}) - Lulacloud</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f9fafb;
-      margin: 0;
-      padding: 20px;
-      color: #111827;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem;
-      background: #fff;
-      border-radius: 0.75rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      text-align: center;
-      color: #1f2937;
-    }
-    .section-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-top: 2rem;
-      margin-bottom: 0.75rem;
-      color: #1f2937;
-    }
-    .download-button {
-      display: block;
-      background: linear-gradient(to right, #10b981, #059669);
-      color: white;
-      padding: 0.8rem 1rem;
-      margin: 0.75rem 0;
-      text-align: center;
-      text-decoration: none;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      transition: background 0.3s ease;
-    }
-    .download-button:hover {
-      background: linear-gradient(to right, #059669, #047857);
-    }
-    .sub-button {
-      display: inline-block;
-      background: #3b82f6;
-      color: white;
-      padding: 0.5rem 0.8rem;
-      margin: 0.3rem 0.3rem 0 0;
-      text-align: center;
-      text-decoration: none;
-      border-radius: 0.375rem;
-      font-size: 0.9rem;
-    }
-    .sub-button:hover {
-      background: #2563eb;
-    }
-    footer {
-      margin-top: 3rem;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #6b7280;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Download: ${title} (${year})</h1>
-
-    <div class="section-title">🎬 Video Downloads</div>
-    ${
-      downloads.length
-        ? downloads
-            .map(dl => {
-              const label = dl.label || 'HD Quality';
-              const resolution = dl.resolution || '';
-              const rawSize = parseInt(dl.size || 0, 10);
-              const size = rawSize > 0 ? formatFileSize(rawSize) : '';
-
-              return `
-                <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
-                  ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
-                </a>
-              `;
-            })
-            .join('')
-        : '<p>No download links available.</p>'
-    }
-
-    ${
-      subtitles.length
-        ? `
-          <div class="section-title">📝 Subtitles</div>
-          <div>
-            ${subtitles.map(sub => `
-              <a class="sub-button" href="${sub.url}" target="_blank" rel="noopener noreferrer">
-                ${sub.language || 'Subtitle'}
-              </a>
-            `).join('')}
+        <div class="section">
+          <h2>Video Downloads</h2>
+          <div class="grid">
+            ${videoLinks || '<p>No downloads found.</p>'}
           </div>
-        `
-        : ''
-    }
+        </div>
 
-    <footer>Lulacloud Downloads</footer>
-  </div>
-</body>
-</html>
-`;
+        <div class="section">
+          <h2>Subtitles</h2>
+          <div class="grid">
+            ${subtitleLinks || '<p>No subtitles found.</p>'}
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
 
-res.send(htmlContent);
+    res.send(htmlResponse);
 
   } catch (err) {
     console.error('Server error:', err.message);
-    res.status(500).send(`<h2>Internal Server Error</h2><p>${err.message}</p>`);
+    res.status(500).send(`<h2>Internal server error</h2><pre>${err.message}</pre>`);
   }
 };
