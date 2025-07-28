@@ -63,123 +63,120 @@ module.exports = async (req, res) => {
 
     const downloads = downloadResp.data?.data?.downloads || [];
 
-    // ✅ Render a simple HTML page with download buttons
-   let htmlContent = `
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Download ${title} (${year}) - Lulacloud</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', sans-serif;
-        background-color: #f9fafb;
-        margin: 0;
-        padding: 20px;
-        color: #111827;
-      }
-      .container {
-        max-width: 700px;
-        margin: 0 auto;
-        padding: 2rem;
-        background: #fff;
-        border-radius: 0.75rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      }
-      h1 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 1.25rem;
-        text-align: center;
-        color: #1f2937;
-      }
-      .section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-top: 2rem;
-        margin-bottom: 0.75rem;
-        color: #1f2937;
-      }
-      .download-button {
-        display: block;
-        background: #10b981;
-        color: white;
-        padding: 0.75rem 1rem;
-        margin: 0.5rem 0;
-        text-align: center;
-        text-decoration: none;
-        border-radius: 0.5rem;
-        transition: background 0.2s ease;
-      }
-      .download-button:hover {
-        background: #059669;
-      }
-      .sub-button {
-        display: block;
-        background: #3b82f6;
-        color: white;
-        padding: 0.6rem 1rem;
-        margin: 0.3rem 0;
-        text-align: center;
-        text-decoration: none;
-        border-radius: 0.5rem;
-        transition: background 0.2s ease;
-      }
-      .sub-button:hover {
-        background: #2563eb;
-      }
-      footer {
-        margin-top: 2rem;
-        text-align: center;
-        font-size: 0.85rem;
-        color: #6b7280;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Download: ${title} (${year})</h1>
+    let htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Download ${title} (${year}) - Lulacloud</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', sans-serif;
+          background-color: #f9fafb;
+          margin: 0;
+          padding: 20px;
+          color: #111827;
+        }
+        .container {
+          max-width: 700px;
+          margin: 0 auto;
+          padding: 2rem;
+          background: #fff;
+          border-radius: 0.75rem;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin-bottom: 1.25rem;
+          text-align: center;
+          color: #1f2937;
+        }
+        .section-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-top: 2rem;
+          margin-bottom: 0.75rem;
+          color: #1f2937;
+        }
+        .download-button {
+          display: block;
+          background: #10b981;
+          color: white;
+          padding: 0.75rem 1rem;
+          margin: 0.5rem 0;
+          text-align: center;
+          text-decoration: none;
+          border-radius: 0.5rem;
+          transition: background 0.2s ease;
+        }
+        .download-button:hover {
+          background: #059669;
+        }
+        .sub-button {
+          display: inline-block;
+          background: #3b82f6;
+          color: white;
+          padding: 0.6rem 1rem;
+          margin: 0.3rem 0.3rem 0 0;
+          text-align: center;
+          text-decoration: none;
+          border-radius: 0.5rem;
+          transition: background 0.2s ease;
+        }
+        .sub-button:hover {
+          background: #2563eb;
+        }
+        footer {
+          margin-top: 2rem;
+          text-align: center;
+          font-size: 0.85rem;
+          color: #6b7280;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Download: ${title} (${year})</h1>
 
-      <div class="section-title">🎬 Video Downloads</div>
-      ${
-        downloads.length
-          ? downloads
-              .map(dl => {
-                const label = dl.label || 'Unknown Quality';
-                const resolution = dl.resolution || '';
-                const size = dl.size || '';
-                return `
-                  <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
-                    ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
-                  </a>
-                `;
-              })
-              .join('')
-          : '<p>No download links found.</p>'
-      }
+        <div class="section-title">🎬 Video Downloads</div>
+        ${
+          downloads.length
+            ? downloads
+                .map(dl => {
+                  const label = dl.label || 'Unknown Quality';
+                  const resolution = dl.resolution || '';
+                  const size = dl.size || '';
+                  const captions = dl.captions || [];
 
-      <div class="section-title">💬 Subtitles</div>
-      ${
-        captions && captions.length
-          ? captions
-              .map(c => {
-                const lang = c.label || 'Subtitle';
-                return `
-                  <a class="sub-button" href="${c.file}" target="_blank" rel="noopener noreferrer">
-                    ${lang}
-                  </a>
-                `;
-              })
-              .join('')
-          : '<p>No subtitles available.</p>'
-      }
-    </div>
+                  const captionLinks = captions.map(c => {
+                    const lang = c.language || 'Subtitle';
+                    return `
+                      <a class="sub-button" href="${c.url}" target="_blank" rel="noopener noreferrer">
+                        ${lang}
+                      </a>
+                    `;
+                  }).join('');
 
-    <footer>Powered by Lulacloud × MovieBox API</footer>
-  </body>
-  </html>
-`;
+                  return `
+                    <div>
+                      <a class="download-button" href="${dl.url}" target="_blank" rel="noopener noreferrer">
+                        ${label}${resolution ? ' • ' + resolution : ''}${size ? ' • ' + size : ''}
+                      </a>
+                      ${captions.length ? `<div>${captionLinks}</div>` : ''}
+                    </div>
+                  `;
+                })
+                .join('')
+            : '<p>No download links available.</p>'
+        }
+
+      </div>
+      <footer>Powered by Lulacloud × MovieBox API</footer>
+    </body>
+    </html>
+    `;
 
     res.send(htmlContent);
 
