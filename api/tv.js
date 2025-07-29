@@ -110,64 +110,92 @@ module.exports = async (req, res) => {
     <style>
       body {
         font-family: 'Inter', sans-serif;
-        background: #f0f2f5;
+        background: #000;
         margin: 0;
         padding: 20px;
-        color: #222;
+        color: #fff;
       }
+
       h1 {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 40px;
         font-size: 2rem;
       }
+
       .section {
-        margin-bottom: 40px;
+        margin-bottom: 50px;
       }
+
       .section h2 {
-        font-size: 1.5rem;
-        color: #444;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 5px;
+        font-size: 1.4rem;
+        margin-bottom: 20px;
+        text-align: center;
+        border-bottom: 2px solid rgba(255,255,255,0.2);
+        display: inline-block;
+        padding-bottom: 6px;
       }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      @media (min-width: 768px) {
+        .grid {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+
       .card {
-        background: #fff;
-        padding: 20px;
+        background: #111;
+        border: 1px solid rgba(255,255,255,0.15);
         border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        margin-bottom: 15px;
-        transition: transform 0.2s;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        transition: transform 0.2s ease;
       }
+
       .card:hover {
         transform: translateY(-4px);
       }
+
       .card h3 {
-        margin-top: 0;
-        font-size: 1.2rem;
-        color: #007BFF;
+        margin: 0 0 10px;
+        font-size: 1.1rem;
+        color: #00cec9;
       }
+
       .card p {
-        margin: 8px 0;
+        font-size: 0.9rem;
+        color: #bbb;
+        margin-bottom: 15px;
       }
+
       .button {
-        display: inline-block;
-        padding: 8px 16px;
-        background: #007BFF;
+        background: linear-gradient(135deg, #00b894, #00cec9);
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
         color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: background 0.3s ease, transform 0.2s ease;
+        font-size: 0.9rem;
         text-decoration: none;
-        border-radius: 6px;
-        font-weight: 600;
-        transition: background 0.3s;
+        display: inline-block;
       }
+
       .button:hover {
-        background: #0056b3;
+        background: linear-gradient(135deg, #00cec9, #00b894);
+        transform: scale(1.05);
       }
-      @media (min-width: 600px) {
-        .grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 20px;
-        }
+
+      form {
+        margin: 0;
       }
     </style>
   </head>
@@ -187,16 +215,18 @@ module.exports = async (req, res) => {
         ${subtitleLinks || '<p>No subtitles found.</p>'}
       </div>
     </div>
-        <script>
-          // Disable right-click on forms
-          document.addEventListener('contextmenu', function (e) {
-            if (e.target.closest('form')) e.preventDefault();
-          });
-        </script>
-       <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script>
-      </body>
-      </html>
-    `;
+
+    <script>
+      // Disable right-click on forms
+      document.addEventListener('contextmenu', function (e) {
+        if (e.target.closest('form')) e.preventDefault();
+      });
+    </script>
+
+    <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script>
+  </body>
+  </html>
+`;
 
     res.send(htmlResponse);
 
