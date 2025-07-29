@@ -97,126 +97,134 @@ module.exports = async (req, res) => {
       `;
     }).join('');
 
-    const htmlResponse = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>${title} (${year}) Downloads</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: url('https://i.imgur.com/O7D2V5N.jpg') no-repeat center center fixed;
-      background-size: cover;
-      margin: 0;
-      padding: 20px;
-      color: white;
-      text-shadow: 1px 1px 2px #000;
-    }
+    const htmlResponse = `  
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8" />  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>  
+  <title>Download - ${title}</title>  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">  
+  <style>  
+    body {  
+      font-family: 'Inter', sans-serif;  
+      background: #000;  
+      margin: 0;  
+      padding: 20px;  
+      color: #fff;  
+    }  
+  
+    h1 {  
+      text-align: center;  
+      margin-bottom: 40px;  
+      font-size: 2rem;  
+    }  
+  
+    .section {  
+      margin-bottom: 50px;  
+    }  
+  
+    .section h2 {  
+      font-size: 1.4rem;  
+      margin-bottom: 20px;  
+      text-align: center;  
+      border-bottom: 2px solid rgba(255,255,255,0.2);  
+      display: inline-block;  
+      padding-bottom: 6px;  
+    }  
+  
+    .grid {  
+      display: grid;  
+      grid-template-columns: repeat(2, 1fr);  
+      gap: 20px;  
+    }  
+  
+    @media (min-width: 768px) {  
+      .grid {  
+        grid-template-columns: repeat(4, 1fr);  
+      }  
+    }  
+  
+    .card {  
+      background: #111;  
+      border: 1px solid rgba(255,255,255,0.15);  
+      border-radius: 12px;  
+      padding: 20px;  
+      text-align: center;  
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);  
+      transition: transform 0.2s ease;  
+    }  
+  
+    .card:hover {  
+      transform: translateY(-4px);  
+    }  
+  
+    .card h3 {  
+      margin: 0 0 10px;  
+      font-size: 1.1rem;  
+      color: #00cec9;  
+    }  
+  
+    .card p {  
+      font-size: 0.9rem;  
+      color: #bbb;  
+      margin-bottom: 15px;  
+    }  
+  
+    .button {  
+      background: linear-gradient(135deg, #00b894, #00cec9);  
+      border: none;  
+      padding: 10px 16px;  
+      border-radius: 8px;  
+      color: #fff;  
+      font-weight: bold;  
+      cursor: pointer;  
+      text-transform: uppercase;  
+      letter-spacing: 0.5px;  
+      transition: background 0.3s ease, transform 0.2s ease;  
+      font-size: 0.9rem;  
+    }  
+  
+    .button:hover {  
+      background: linear-gradient(135deg, #00cec9, #00b894);  
+      transform: scale(1.05);  
+    }  
+  
+    form {  
+      margin: 0;  
+    }  
+  </style>  
+</head>  
+<body>  
+  <h1>${title} (${year})</h1>  
+  
+  <div class="section">  
+    <h2>Video Downloads</h2>  
+    <div class="grid">  
+      ${videoLinks || '<p>No video downloads found.</p>'}  
+    </div>  
+  </div>  
+  
+  <div class="section">  
+    <h2>Subtitles</h2>  
+    <div class="grid">  
+      ${subtitleLinks || '<p>No subtitles found.</p>'}  
+    </div>  
+  </div>  
+        <script>
+          // Disable right-click on forms
+          document.addEventListener('contextmenu', function (e) {
+            if (e.target.closest('form')) e.preventDefault();
+          });
+        </script>
+        <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script>
+      </body>
+      </html>
+    `;
 
-    h1 {
-      text-align: center;
-      margin-bottom: 40px;
-      font-size: 2rem;
-    }
-
-    .section {
-      margin-bottom: 40px;
-      text-align: center;
-    }
-
-    .section h2 {
-      font-size: 1.3rem;
-      margin-bottom: 20px;
-      border-bottom: 2px solid rgba(255,255,255,0.3);
-      display: inline-block;
-      padding: 5px 15px;
-    }
-
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
-    }
-
-    .card {
-      background: rgba(0, 0, 0, 0.65);
-      padding: 15px 20px;
-      border-radius: 10px;
-      min-width: 200px;
-      max-width: 240px;
-      transition: transform 0.2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-    }
-
-    .card h3 {
-      margin: 0;
-      font-size: 1.1rem;
-      color: #fff;
-    }
-
-    .card p {
-      margin: 6px 0 12px;
-      font-size: 0.95rem;
-    }
-
-    .button {
-      display: inline-block;
-      padding: 10px 16px;
-      background: #111;
-      border: 2px solid #fff;
-      color: #fff;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s ease-in-out;
-    }
-
-    .button:hover {
-      background: #fff;
-      color: #000;
-    }
-
-    form {
-      margin: 0;
-    }
-  </style>
-</head>
-<body>
-  <h1>${title} (${year})</h1>
-
-  <div class="section">
-    <h2>Video Downloads</h2>
-    <div class="grid">
-      ${videoLinks || '<p>No video downloads found.</p>'}
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>Subtitle Downloads</h2>
-    <div class="grid">
-      ${subtitleLinks || '<p>No subtitles found.</p>'}
-    </div>
-  </div>
-
-  <script>
-    document.addEventListener('contextmenu', function (e) {
-      if (e.target.closest('form')) e.preventDefault();
-    });
-  </script>
-      <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script>
-</body>
-</html>
-`;
     res.send(htmlResponse);
   } catch (err) {
     console.error('Server error:', err.message);
     res.status(500).send(`<h2>Internal server error</h2><pre>${err.message}</pre>`);
   }
-};()
+};
