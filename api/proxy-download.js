@@ -3,7 +3,7 @@ import http from 'http';
 import { URL } from 'url';
 
 export default async function handler(req, res) {
-  const { url, filename } = req.query;
+  const { url, title } = req.query;
 
   if (!url || !url.startsWith('http')) {
     return res.status(400).send('Invalid or missing URL');
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     const options = {
       headers: {
         'User-Agent': 'Mozilla/5.0',
-        'Referer': 'https://moviebox.ph/' // Change if needed
+        'Referer': 'https://moviebox.ph/' // Change as needed
       }
     };
 
@@ -26,17 +26,22 @@ export default async function handler(req, res) {
         return;
       }
 
-      // Try to extract filename from upstream Content-Disposition
+      // Try to extract filename from Content-Disposition if present
       const disposition = fileRes.headers['content-disposition'];
-      let extractedFilename = null;
+      let filename = null;
 
       if (disposition && disposition.includes('filename=')) {
         const match = disposition.match(/filename="?([^"]+)"?/);
-        if (match) extractedFilename = match[1];
+        if (match) filename = match[1];
       }
 
-      // Use custom filename from query if provided, otherwise fallback
-      const finalFilename = filename || extractedFilename || parsedUrl.pathname.split('/').pop();
+      // Extract extension from original URL if needed
+      const ext = parsedUrl.pathname.split('.').pop().split('?')[0];
+      const safeTitle = title ? title.replace(/[^\w\s.-]/g, '') : null;
+
+      const finalFilename = safeTitle
+        ? `${safeTitle.trim()}.${ext}`
+        : filename || parsedUrl.pathname.split('/').pop();
 
       res.setHeader('Content-Disposition', `attachment; filename="${finalFilename}"`);
       res.setHeader('Content-Type', fileRes.headers['content-type'] || 'application/octet-stream');
