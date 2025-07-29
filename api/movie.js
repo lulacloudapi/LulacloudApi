@@ -69,22 +69,30 @@ module.exports = async (req, res) => {
 
     const videoLinks = downloads.map(item => {
       const sizeMB = (parseInt(item.size) / (1024 * 1024)).toFixed(2);
+      const encodedUrl = encodeURIComponent(item.url);
       return `
         <div class="card">
           <h3>${item.resolution}p</h3>
           <p>Size: ${sizeMB} MB</p>
-          <a href="${item.url}" class="button" target="_blank">Download</a>
+          <form action="https://dl.lulacloud.co/download" method="get" target="_blank" onsubmit="return true;">
+            <input type="hidden" name="url" value="${encodedUrl}" />
+            <button type="submit" class="button">Download</button>
+          </form>
         </div>
       `;
     }).join('');
 
     const subtitleLinks = captions.map(sub => {
       const sizeKB = (parseInt(sub.size) / 1024).toFixed(1);
+      const encodedUrl = encodeURIComponent(sub.url);
       return `
         <div class="card">
           <h3>${sub.lanName} (${sub.lan})</h3>
           <p>Size: ${sizeKB} KB</p>
-          <a href="${sub.url}" class="button" target="_blank">Download Subtitle</a>
+          <form action="https://dl.lulacloud.co/download" method="get" target="_blank" onsubmit="return true;">
+            <input type="hidden" name="url" value="${encodedUrl}" />
+            <button type="submit" class="button">Download Subtitle</button>
+          </form>
         </div>
       `;
     }).join('');
@@ -93,8 +101,8 @@ module.exports = async (req, res) => {
       <!DOCTYPE html>
       <html lang="en">
       <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <title>Download - ${title}</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
         <style>
@@ -127,6 +135,8 @@ module.exports = async (req, res) => {
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             margin-bottom: 15px;
             transition: transform 0.2s;
+            -webkit-user-select: none;
+            user-select: none;
           }
           .card:hover {
             transform: translateY(-4px);
@@ -141,16 +151,22 @@ module.exports = async (req, res) => {
           }
           .button {
             display: inline-block;
-            padding: 8px 16px;
-            background: #007BFF;
+            padding: 10px 20px;
+            background: #00b894;
             color: #fff;
-            text-decoration: none;
-            border-radius: 6px;
             font-weight: 600;
-            transition: background 0.3s;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            user-select: none;
           }
           .button:hover {
-            background: #0056b3;
+            background: #019874;
+          }
+          form {
+            display: inline-block;
           }
           @media (min-width: 600px) {
             .grid {
@@ -177,13 +193,19 @@ module.exports = async (req, res) => {
             ${subtitleLinks || '<p>No subtitles found.</p>'}
           </div>
         </div>
+
+        <script>
+          // Disable right-click on forms
+          document.addEventListener('contextmenu', function (e) {
+            if (e.target.closest('form')) e.preventDefault();
+          });
+        </script>
         <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script>
       </body>
       </html>
     `;
 
     res.send(htmlResponse);
-
   } catch (err) {
     console.error('Server error:', err.message);
     res.status(500).send(`<h2>Internal server error</h2><pre>${err.message}</pre>`);
