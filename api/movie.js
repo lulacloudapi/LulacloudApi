@@ -69,13 +69,13 @@ module.exports = async (req, res) => {
 
     const videoLinks = downloads.map(item => {
       const sizeMB = (parseInt(item.size) / (1024 * 1024)).toFixed(2);
-      const encodedUrl = encodeURIComponent(item.url);
+      const rawUrl = item.url; // DO NOT encode
       return `
         <div class="card">
           <h3>${item.resolution}p</h3>
           <p>Size: ${sizeMB} MB</p>
           <form action="https://dl.lulacloud.co/download" method="get" target="_blank" onsubmit="return true;">
-            <input type="hidden" name="url" value="${encodedUrl}" />
+            <input type="hidden" name="url" value="${rawUrl}" />
             <button type="submit" class="button">Download</button>
           </form>
         </div>
@@ -84,13 +84,13 @@ module.exports = async (req, res) => {
 
     const subtitleLinks = captions.map(sub => {
       const sizeKB = (parseInt(sub.size) / 1024).toFixed(1);
-      const encodedUrl = encodeURIComponent(sub.url);
+      const rawUrl = sub.url; // DO NOT encode
       return `
         <div class="card">
           <h3>${sub.lanName} (${sub.lan})</h3>
           <p>Size: ${sizeKB} KB</p>
           <form action="https://dl.lulacloud.co/download" method="get" target="_blank" onsubmit="return true;">
-            <input type="hidden" name="url" value="${encodedUrl}" />
+            <input type="hidden" name="url" value="${rawUrl}" />
             <button type="submit" class="button">Download Subtitle</button>
           </form>
         </div>
