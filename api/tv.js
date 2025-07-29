@@ -99,7 +99,7 @@ module.exports = async (req, res) => {
       `;
     }).join('');
 
-    const tvHtmlResponse = `
+    const htmlResponse = `
   <!DOCTYPE html>
   <html lang="en">
   <head>
