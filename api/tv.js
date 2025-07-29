@@ -99,94 +99,94 @@ module.exports = async (req, res) => {
       `;
     }).join('');
 
-    const htmlResponse = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Downloads - ${title}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-        <style>
-          body {
-            font-family: 'Inter', sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-            color: #222;
-          }
-          h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2rem;
-          }
-          .section {
-            margin-bottom: 40px;
-          }
-          .section h2 {
-            font-size: 1.5rem;
-            color: #444;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 5px;
-          }
-          .card {
-            background: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-            transition: transform 0.2s;
-          }
-          .card:hover {
-            transform: translateY(-4px);
-          }
-          .card h3 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            color: #007BFF;
-          }
-          .card p {
-            margin: 8px 0;
-          }
-          .button {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #007BFF;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: background 0.3s;
-          }
-          .button:hover {
-            background: #0056b3;
-          }
-          @media (min-width: 600px) {
-            .grid {
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-              gap: 20px;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <h1>${title} - Season ${season}, Episode ${episode}</h1>
+    const tvHtmlResponse = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title} - S${season}E${episode} Downloads</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #f0f2f5;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2rem;
+      }
+      .section {
+        margin-bottom: 40px;
+      }
+      .section h2 {
+        font-size: 1.5rem;
+        color: #444;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 5px;
+      }
+      .card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        transition: transform 0.2s;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+      }
+      .card h3 {
+        margin-top: 0;
+        font-size: 1.2rem;
+        color: #007BFF;
+      }
+      .card p {
+        margin: 8px 0;
+      }
+      .button {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #007BFF;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: background 0.3s;
+      }
+      .button:hover {
+        background: #0056b3;
+      }
+      @media (min-width: 600px) {
+        .grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>${title} - Season ${season}, Episode ${episode}</h1>
 
-        <div class="section">
-          <h2>Video Downloads</h2>
-          <div class="grid">
-            ${videoLinks || '<p>No downloads found.</p>'}
-          </div>
-        </div>
+    <div class="section">
+      <h2>Video Downloads</h2>
+      <div class="grid">
+        ${videoLinks || '<p>No downloads found.</p>'}
+      </div>
+    </div>
 
-        <div class="section">
-          <h2>Subtitles</h2>
-          <div class="grid">
-            ${subtitleLinks || '<p>No subtitles found.</p>'}
-          </div>
-        </div>
+    <div class="section">
+      <h2>Subtitles</h2>
+      <div class="grid">
+        ${subtitleLinks || '<p>No subtitles found.</p>'}
+      </div>
+    </div>
         <script>
           // Disable right-click on forms
           document.addEventListener('contextmenu', function (e) {
