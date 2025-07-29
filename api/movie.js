@@ -97,11 +97,7 @@ module.exports = async (req, res) => {
       `;
     }).join('');
 
-    const posterUrl = tmdbResp.data.poster_path
-  ? `https://image.tmdb.org/t/p/w500${tmdbResp.data.poster_path}`
-  : '';
-
-const htmlResponse = `
+    const htmlResponse = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -112,32 +108,22 @@ const htmlResponse = `
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background: url('${posterUrl}') no-repeat center center fixed;
-      background-size: cover;
+      background-color: #000;
       margin: 0;
       padding: 0;
       color: white;
-      text-shadow: 1px 1px 2px #000;
     }
 
-    .overlay {
-      background-color: rgba(0, 0, 0, 0.85);
-      min-height: 100vh;
+    .container {
       padding: 20px;
+      max-width: 1200px;
+      margin: auto;
     }
 
     h1 {
       text-align: center;
       margin-bottom: 30px;
       font-size: 2rem;
-    }
-
-    .poster {
-      display: block;
-      max-width: 200px;
-      margin: 0 auto 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
     }
 
     .section {
@@ -169,7 +155,7 @@ const htmlResponse = `
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.06);
       padding: 15px 20px;
       border-radius: 10px;
       width: 100%;
@@ -216,8 +202,7 @@ const htmlResponse = `
   </style>
 </head>
 <body>
-  <div class="overlay">
-    <img src="${posterUrl}" alt="${title} poster" class="poster">
+  <div class="container">
     <h1>${title} (${year})</h1>
 
     <div class="section">
@@ -240,7 +225,7 @@ const htmlResponse = `
       if (e.target.closest('form')) e.preventDefault();
     });
   </script>
-  <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script> 
+    <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script> 
 </body>
 </html>
 `;
