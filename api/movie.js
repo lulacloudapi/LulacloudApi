@@ -202,21 +202,19 @@ module.exports = async (req, res) => {
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>${title} (${year})</h1>
+  <h1>${title} (${year})</h1>
 
-    <div class="section">
-      <h2>Video Downloads</h2>
-      <div class="grid">
-        ${videoLinks || '<p>No video downloads found.</p>'}
-      </div>
+  <div class="section">
+    <h2>Video Downloads</h2>
+    <div class="grid">
+      ${videoLinks || '<p>No video downloads found.</p>'}
     </div>
+  </div>
 
-    <div class="section">
-      <h2>Subtitle Downloads</h2>
-      <div class="grid">
-        ${subtitleLinks || '<p>No subtitles found.</p>'}
-      </div>
+  <div class="section">
+    <h2>Subtitle Downloads</h2>
+    <div class="grid">
+      ${subtitleLinks || '<p>No subtitles found.</p>'}
     </div>
   </div>
 
@@ -225,11 +223,10 @@ module.exports = async (req, res) => {
       if (e.target.closest('form')) e.preventDefault();
     });
   </script>
-    <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script> 
+  <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script>
 </body>
 </html>
 `;
-
     res.send(htmlResponse);
   } catch (err) {
     console.error('Server error:', err.message);
