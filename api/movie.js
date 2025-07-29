@@ -97,7 +97,11 @@ module.exports = async (req, res) => {
       `;
     }).join('');
 
-    const htmlResponse = `
+    const posterUrl = tmdbResp.data.poster_path
+  ? `https://image.tmdb.org/t/p/w500${tmdbResp.data.poster_path}`
+  : '';
+
+const htmlResponse = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -108,18 +112,32 @@ module.exports = async (req, res) => {
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background: url('https://i.imgur.com/O7D2V5N.jpg') no-repeat center center fixed;
+      background: url('${posterUrl}') no-repeat center center fixed;
       background-size: cover;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       color: white;
       text-shadow: 1px 1px 2px #000;
     }
 
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.85);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
     h1 {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
       font-size: 2rem;
+    }
+
+    .poster {
+      display: block;
+      max-width: 200px;
+      margin: 0 auto 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
     }
 
     .section {
@@ -136,19 +154,28 @@ module.exports = async (req, res) => {
     }
 
     .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 15px;
+      justify-items: center;
+      padding: 0 10px;
+    }
+
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(4, 1fr);
+        padding: 0 40px;
+      }
     }
 
     .card {
-      background: rgba(0, 0, 0, 0.65);
+      background: rgba(255, 255, 255, 0.05);
       padding: 15px 20px;
       border-radius: 10px;
-      min-width: 200px;
-      max-width: 240px;
+      width: 100%;
+      max-width: 200px;
       transition: transform 0.2s ease;
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
     .card:hover {
@@ -169,18 +196,18 @@ module.exports = async (req, res) => {
     .button {
       display: inline-block;
       padding: 10px 16px;
-      background: #111;
-      border: 2px solid #fff;
+      background: #00b894;
       color: #fff;
-      border-radius: 8px;
       font-weight: bold;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
       transition: 0.2s ease-in-out;
+      text-decoration: none;
     }
 
     .button:hover {
-      background: #fff;
-      color: #000;
+      background: #019874;
     }
 
     form {
@@ -189,19 +216,22 @@ module.exports = async (req, res) => {
   </style>
 </head>
 <body>
-  <h1>${title} (${year})</h1>
+  <div class="overlay">
+    <img src="${posterUrl}" alt="${title} poster" class="poster">
+    <h1>${title} (${year})</h1>
 
-  <div class="section">
-    <h2>Video Downloads</h2>
-    <div class="grid">
-      ${videoLinks || '<p>No video downloads found.</p>'}
+    <div class="section">
+      <h2>Video Downloads</h2>
+      <div class="grid">
+        ${videoLinks || '<p>No video downloads found.</p>'}
+      </div>
     </div>
-  </div>
 
-  <div class="section">
-    <h2>Subtitle Downloads</h2>
-    <div class="grid">
-      ${subtitleLinks || '<p>No subtitles found.</p>'}
+    <div class="section">
+      <h2>Subtitle Downloads</h2>
+      <div class="grid">
+        ${subtitleLinks || '<p>No subtitles found.</p>'}
+      </div>
     </div>
   </div>
 
@@ -210,7 +240,7 @@ module.exports = async (req, res) => {
       if (e.target.closest('form')) e.preventDefault();
     });
   </script>
-    <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script> 
+  <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script> 
 </body>
 </html>
 `;
@@ -220,4 +250,4 @@ module.exports = async (req, res) => {
     console.error('Server error:', err.message);
     res.status(500).send(`<h2>Internal server error</h2><pre>${err.message}</pre>`);
   }
-};
+};()
