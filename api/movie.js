@@ -74,10 +74,10 @@ module.exports = async (req, res) => {
         <div class="card">
           <h3>${item.resolution}p</h3>
           <p>Size: ${sizeMB} MB</p>
-          <form action="https://dl.lulacloud.co/download" method="get" target="_blank" onsubmit="return true;">
-            <input type="hidden" name="url" value="${rawUrl}" />
-            <button type="submit" class="button">Download</button>
-          </form>
+          <form action="/api/proxy-download" method="get" target="_blank">
+  <input type="hidden" name="url" value="${item.url}" />
+  <button type="submit" class="button">Download</button>
+</form>
         </div>
       `;
     }).join('');
