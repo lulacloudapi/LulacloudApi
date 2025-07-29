@@ -225,6 +225,6 @@ module.exports = async (req, res) => {
     res.send(htmlResponse);
   } catch (err) {
     console.error('Server error:', err.message);
-    res.status(500).send(`<h2>Internal server error</h2><pre>${err.message}</pre>`);
+    res.status(500).send(`<h2>Downloads server error</h2><pre>${err.message}</pre>`);
   }
 };
