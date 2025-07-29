@@ -108,21 +108,17 @@ module.exports = async (req, res) => {
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #000;
+      background: url('https://i.imgur.com/O7D2V5N.jpg') no-repeat center center fixed;
+      background-size: cover;
       margin: 0;
-      padding: 0;
-      color: white;
-    }
-
-    .container {
       padding: 20px;
-      max-width: 1200px;
-      margin: auto;
+      color: white;
+      text-shadow: 1px 1px 2px #000;
     }
 
     h1 {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 40px;
       font-size: 2rem;
     }
 
@@ -140,28 +136,19 @@ module.exports = async (req, res) => {
     }
 
     .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 15px;
-      justify-items: center;
-      padding: 0 10px;
-    }
-
-    @media (min-width: 768px) {
-      .grid {
-        grid-template-columns: repeat(4, 1fr);
-        padding: 0 40px;
-      }
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(0, 0, 0, 0.65);
       padding: 15px 20px;
       border-radius: 10px;
-      width: 100%;
-      max-width: 200px;
+      min-width: 200px;
+      max-width: 240px;
       transition: transform 0.2s ease;
-      border: 1px solid rgba(255,255,255,0.2);
     }
 
     .card:hover {
@@ -182,18 +169,18 @@ module.exports = async (req, res) => {
     .button {
       display: inline-block;
       padding: 10px 16px;
-      background: #00b894;
+      background: #111;
+      border: 2px solid #fff;
       color: #fff;
-      font-weight: bold;
-      border: none;
       border-radius: 8px;
+      font-weight: bold;
       cursor: pointer;
       transition: 0.2s ease-in-out;
-      text-decoration: none;
     }
 
     .button:hover {
-      background: #019874;
+      background: #fff;
+      color: #000;
     }
 
     form {
@@ -223,7 +210,7 @@ module.exports = async (req, res) => {
       if (e.target.closest('form')) e.preventDefault();
     });
   </script>
-  <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script>
+      <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script>
 </body>
 </html>
 `;
