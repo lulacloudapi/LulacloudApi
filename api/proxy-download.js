@@ -1,9 +1,9 @@
-const https = require('https');
-const http = require('http');
-const { URL } = require('url');
+import https from 'https';
+import http from 'http';
+import { URL } from 'url';
 
 export default async function handler(req, res) {
-  const { url } = req.query;
+  const { url, filename } = req.query;
 
   if (!url || !url.startsWith('http')) {
     return res.status(400).send('Invalid or missing URL');
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     const options = {
       headers: {
         'User-Agent': 'Mozilla/5.0',
-        'Referer': 'https://moviebox.ph/' // ← update if a different referer is required
+        'Referer': 'https://moviebox.ph/' // Change if needed
       }
     };
 
@@ -26,7 +26,19 @@ export default async function handler(req, res) {
         return;
       }
 
-      res.setHeader('Content-Disposition', `attachment; filename="${parsedUrl.pathname.split('/').pop()}"`);
+      // Try to extract filename from upstream Content-Disposition
+      const disposition = fileRes.headers['content-disposition'];
+      let extractedFilename = null;
+
+      if (disposition && disposition.includes('filename=')) {
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        if (match) extractedFilename = match[1];
+      }
+
+      // Use custom filename from query if provided, otherwise fallback
+      const finalFilename = filename || extractedFilename || parsedUrl.pathname.split('/').pop();
+
+      res.setHeader('Content-Disposition', `attachment; filename="${finalFilename}"`);
       res.setHeader('Content-Type', fileRes.headers['content-type'] || 'application/octet-stream');
 
       fileRes.pipe(res);
