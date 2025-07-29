@@ -192,24 +192,9 @@ module.exports = async (req, res) => {
   <h1>${title} (${year})</h1>
 
   <div class="section">
-    <h2>MKV Downloads (Embedded Subtitles)</h2>
+    <h2>Video Downloads</h2>
     <div class="grid">
-      ${videoLinks
-        .split('</div>')
-        .filter(card => card.includes('480') && parseFloat(card.match(/(\d+(\.\d+)?) MB/)[1]) < 500)
-        .map(card => card + '</div>')
-        .join('') || '<p>No MKV downloads.</p>'}
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>Mp4 Downloads (No Subtitles)</h2>
-    <div class="grid">
-      ${videoLinks
-        .split('</div>')
-        .filter(card => parseFloat(card.match(/(\d+(\.\d+)?) MB/)[1]) >= 500)
-        .map(card => card + '</div>')
-        .join('') || '<p>No MP4 downloads.</p>'}
+      ${videoLinks || '<p>No video downloads found.</p>'}
     </div>
   </div>
 
@@ -225,7 +210,7 @@ module.exports = async (req, res) => {
       if (e.target.closest('form')) e.preventDefault();
     });
   </script>
-  <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script> 
+    <script data-cfasync="false" async type="text/javascript" src="//fj.detatbulkier.com/rjn7keuwoBa/127530"></script> 
 </body>
 </html>
 `;
